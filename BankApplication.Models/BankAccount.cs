@@ -150,10 +150,9 @@ namespace BankApplication.Models
             return pass;
         }
 
-        public BankAccount logout()
+        public void logout()
         {
-            BankAccount b = null;
-            return b;
+            BankAccount b= null;
         }
     }
 }

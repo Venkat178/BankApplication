@@ -6,6 +6,7 @@ namespace BankApplication.Services
     class ExchangeRate
     {
         Dictionary<string, double> ExchangeRateList = new Dictionary<string, double>(){
+                {"INR", 1},
                 {"AFN", 0.87},
                 {"AMD", 0.15 },
                 { "AZN"  , 43.28 } ,

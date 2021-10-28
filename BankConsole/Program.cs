@@ -84,7 +84,8 @@ namespace BankConsole
                                     case EnumLoginmenu.ViewTransactions:
                                         b.ViewTransactions(uid);
                                         break;
-                                    case EnumLoginmenu.Exit:
+                                    case EnumLoginmenu.Logout:
+                                        b.logout();
                                         exitFlag1 = false;
                                         break;
                                     default:
@@ -112,22 +113,12 @@ namespace BankConsole
     {
         public void MainMenu()
         {
-            Console.WriteLine(" Welcome to Tech Bank ");
-            Console.WriteLine("1 . Create Account .");
-            Console.WriteLine("2 . View Id .");
-            Console.WriteLine("3 . Login .");
-            Console.WriteLine("4 . Exit .");
+            Console.WriteLine(" Welcome to Tech Bank .\n Create Account .\n View Id .\n Login .\n Exit .");
         }
 
         public void LoginMenu()
         {
-            Console.WriteLine(" Welcome to Tech Bank ");
-            Console.WriteLine("1 . Deposit .");
-            Console.WriteLine("2 . Withdraw .");
-            Console.WriteLine("3 . Transfer .");
-            Console.WriteLine("4 . View Balance .");
-            Console.WriteLine("5 . View Transactions .");
-            Console.WriteLine("6. Exit .");
+            Console.WriteLine(" Welcome to Tech Bank .\n Deposit .\n Withdraw .\n Transfer .\n View Balance .\n View Transactions .\n Logout .");
         }
     }
 }
