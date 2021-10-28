@@ -5,4 +5,9 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\BankApplication.Models\BankApplication.Models.csproj" />
+    <ProjectReference Include="..\BankApplication.Services\BankApplication.Services.csproj" />
+  </ItemGroup>
+
 </Project>
