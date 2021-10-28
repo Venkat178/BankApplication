@@ -46,14 +46,13 @@ namespace BankApplication.Services
             b.Address = Adrs;
             b.Gender = gnd;
             Bank.BankAccounts.Add(b);
-            return;
         }
 
-        public void deleteAccount(string HolderName)
+        public void deleteAccount(string userid)
         {
             foreach (var i in Bank.BankAccounts)
             {
-                if (i.Name == HolderName)
+                if (i.Id == userid)
                 {
                     Bank.BankAccounts.Remove(i);
                 }

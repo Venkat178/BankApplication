@@ -73,7 +73,7 @@ namespace BankApplication.Models
                     }
                     else
                     {
-                        Console.WriteLine("Insufficient Amount to Withdraw!");
+                        throw new OutofMoneyException("You do not have sufficient money .");
                     }
                 }
             }
