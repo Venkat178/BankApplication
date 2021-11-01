@@ -7,97 +7,186 @@ namespace BankApplication.Services
 {
     public class BankServices
     {
-        public void CreateBank(Bank bank, string branchname)
+        public bool SetUpBank(Bank bank)
         {
-            bank.Id = "THB" + BankDatabase.Banks.Count + 1;
-            bank.IFSCCode = "THB";
-            bank.BranchName = branchname;
-            bank.BankName = "TechBank";
-            BankDatabase.Banks.Add(bank);
-        }
-
-        public void CreateAccount(string HolderName, string pass, string branchname, string phnnumber, string Adrs, GenderType gnd)
-        {
-            if (string.IsNullOrEmpty(HolderName))
+            if (string.IsNullOrEmpty(bank.BranchName))
             {
-                throw new Exception("Empty Name is not valid!");
+                throw new Exception("Empty Name is Not valid!");
             }
 
-            if (Bank.BankAccounts.Count != 0 && Bank.BankAccounts.Any(p => p.Name == HolderName) == true)
+            if (string.IsNullOrEmpty(bank.IFSCCode))
+            {
+                throw new Exception("Empty IFSCCode is Not valid!");
+            }
+
+            if (string.IsNullOrEmpty(bank.BankName))
+            {
+                throw new Exception("Empty Name is Not valid!");
+            }
+
+            BankDatabase.Banks.Add(bank);
+            return true;
+        }
+
+        public string Register(Bank bank,BankAccount bankaccount)
+        {
+            if (string.IsNullOrEmpty(bankaccount.Name))
+            {
+                throw new Exception("Empty Name is Not valid!");
+            }
+
+            if (bank.BankAccounts.Count != 0 && bank.BankAccounts.Any(p => p.Name == bankaccount.Name) == true)
             {
                 throw new Exception("Account already exists!");
             }
 
-            BankAccount bankAccount = new BankAccount();
-            BankAccount b = bankAccount;
-            b.Name = HolderName;
-            b.Id = branchname + (Bank.BankAccounts).Count.ToString();
-            b.BranchName = branchname;
-            foreach (var i in BankDatabase.Banks)
+            if (string.IsNullOrEmpty(bankaccount.PhoneNumber))
             {
-                if (i.BranchName == branchname)
-                {
-                    b.BankId = i.Id;
-                }
+                throw new Exception("Empty Phone Number is not valid!");
             }
-            b.Password = pass;
-            b.Balance = 0.0;
-            b.PhoneNumber = phnnumber;
-            b.Address = Adrs;
-            b.Gender = gnd;
-            Bank.BankAccounts.Add(b);
+
+            if (string.IsNullOrEmpty(bankaccount.Address))
+            {
+                throw new Exception("Empty Address is Not valid!");
+            }
+            return bankaccount.Id;
         }
 
-        public void deleteAccount(string userid)
+
+        public BankAccount Login(Bank bank,string userid, string password)
         {
-            foreach (var i in Bank.BankAccounts)
+            BankAccount user = null;
+            foreach (var i in bank.BankAccounts)
             {
-                if (i.Id == userid)
+                if (i.Id == userid && i.Password == password)
                 {
-                    Bank.BankAccounts.Remove(i);
+                    user = i;
                 }
             }
+            return user;
         }
 
-        public void revertTransaction(string transId)
+        public BankAccount BankStaffLogin(Bank bank,string userid,string password)
         {
-            int word1 = transId.IndexOf("TB");
-            int word2 = transId.IndexOf("TB", word1 + 1);
-            int word3 = transId.IndexOf("THB");
-            string senderId = transId.Substring(word1, (word2 - word1));
-            string reciverId = transId.Substring(word2, (word3 - word2));
-            foreach (var i in BankDatabase.TransList[senderId])
+            BankAccount user = null;
+            foreach(var i in bank.Employees)
             {
-                if ((i.SenderAccountId == senderId) & (i.RecieverAccountId == reciverId) & (i.TransactionId == transId))
+                if (i.Id == userid && i.Password == password)
                 {
-                    foreach (var j in Bank.BankAccounts)
+                    user = i;
+                }
+            }
+            return user;
+        }
+
+        public string Deposit(Bank bank,string userId, double amt)
+        {
+
+            string txnid = "TXN";
+            foreach (var i in bank.BankAccounts)
+            {
+                if (i.Id == userId)
+                {
+                    i.Balance += amt;
+                    Transaction trans = new Transaction(userId, userId, amt, i.BankId, TransactionType.Credited);
+                    BankDatabase.TransList[userId].Add(trans);
+                    txnid = trans.TransactionId;
+                }
+            }
+            return txnid;
+        }
+
+        public string Withdraw (Bank bank, string userId, double amt)
+        {
+            string txnid = "TXN";
+            foreach (var i in bank.BankAccounts)
+            {
+                if (i.Id == userId)
+                {
+                    if (i.Balance >= amt)
                     {
-                        foreach (var k in Bank.BankAccounts)
+                        i.Balance -= amt;
+                        Transaction trans = new Transaction(userId, userId, amt, i.BankId, TransactionType.Debited);
+                        BankDatabase.TransList[userId].Add(trans);
+                        txnid = trans.TransactionId;
+                    }
+                    else
+                    {
+                        throw new OutofMoneyException("You do not have sufficient money .");
+                    }
+                }
+            }
+            return txnid;
+        }
+
+
+        public string Transfer(Bank bank,string recuserId, string snduserId, double amt)
+        {
+            string txnid = "TXN";
+            foreach (var i in bank.BankAccounts)
+            {
+                foreach (var j in bank.BankAccounts)
+                {
+                    if (i.Id == snduserId && j.Id == recuserId)
+                    {
+                        if (i.Balance >= amt)
                         {
-                            if ((j.Id == senderId) & (k.Id == reciverId))
-                            {
-                                j.Balance += i.Amount;
-                                k.Balance -= i.Amount;
-                                Transactions trans = new Transactions(senderId, reciverId, i.Amount, j.BankId, TransactionType.Debited);
-                                Transactions trans1 = new Transactions(senderId, reciverId, i.Amount, j.BankId, TransactionType.Credited);
-                            }
+                            i.Balance -= amt;
+                            j.Balance += amt;
+                            Transaction trans = new Transaction(snduserId, recuserId, amt, i.BankId, TransactionType.Debited);
+                            Transaction trans1 = new Transaction(snduserId, recuserId, amt, i.BankId, TransactionType.Credited);
+                            BankDatabase.TransList[snduserId].Add(trans);
+                            BankDatabase.TransList[recuserId].Add(trans1);
+                            txnid = trans.TransactionId;
                         }
+                        else
+                        {
+                            Console.WriteLine("Insufficient Amount to Transfer");
+                        }
+                    }
+                }
+            }
+            return txnid;
+        }
+
+        public double ViewBalance(Bank bank,string userId)
+        {
+            double bal = 0.0;
+            foreach (var i in bank.BankAccounts)
+            {
+                if (i.Id == userId)
+                {
+                    bal = i.Balance;
+                }
+            }
+            return bal;
+        }
+
+        public void ViewTransactions(Bank bank,string userId)
+        {
+            foreach (var i in bank.BankAccounts)
+            {
+                if (i.Id == userId)
+                {
+                    foreach (var j in BankDatabase.TransList[i.Id])
+                    {
+                        Console.WriteLine(j.SenderAccountId + "to" + j.RecieverAccountId + "of" + j.Amount);
                     }
                 }
             }
         }
 
-        public string returnId(string HolderName)
+        /*public void logout()
         {
-            string id = "";
-            foreach (var i in Bank.BankAccounts)
+            BankAccount b = null;
+        }*/
+
+        public void ViewAllBankBranches()
+        {
+            foreach(var i in BankDatabase.Banks)
             {
-                if (i.Name == HolderName)
-                {
-                    id = i.Id;
-                }
+                Console.WriteLine(i.BranchName);
             }
-            return id;
         }
     }
 }

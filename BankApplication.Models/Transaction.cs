@@ -2,7 +2,7 @@
 
 namespace BankApplication.Models
 {
-    public class Transactions
+    public class Transaction
     {
         public string TransactionId { set; get; }
         public string SenderAccountId { set; get; }
@@ -11,7 +11,7 @@ namespace BankApplication.Models
         public DateTime Time { set; get; }
         public TransactionType Type { set; get; }
 
-        public Transactions(string senderId, string recieverId, double amt, string bankId, TransactionType type)
+        public Transaction(string senderId, string recieverId, double amt, string bankId, TransactionType type)
         {
             TransactionId = "TXN" + senderId + recieverId + bankId + DateTime.Now.ToString("yyyyMMddHHmmss");
             Type = type;

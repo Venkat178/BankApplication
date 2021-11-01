@@ -9,8 +9,14 @@ namespace BankApplication.Models
 		public string BranchName { get; set; }
 		public string IFSCCode { get; set; }
 		public string BankName { get; set; }
+		public string CurrencyCode { get; set; }
 
-		public static List<BankAccount> BankAccounts = new List<BankAccount>();
+        public List<BankAccount> Employees = new List<BankAccount>();
+
+        public List<BankAccount> BankAccounts = new List<BankAccount>();
+
+		//public static List<BankAccount> BankAccounts = new List<BankAccount>();
+
 
 
 	}

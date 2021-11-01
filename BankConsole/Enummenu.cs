@@ -4,15 +4,35 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankConsole
+namespace BankApplicationConsole
 {
-    public enum EnumMainmenu
+    public enum Mainmenu
     {
-        CreateBank, Register, Login,Exit
+        SetUpBank,
+        Register, 
+        Login,
+        Exit
     }
 
-    public enum EnumLoginmenu
+    public enum Usermenu
     {
-        Deposit, Withdraw, Transfer, ViewBalance, ViewTransactions, Logout,Exit
+        Deposit, 
+        Withdraw, 
+        Transfer, 
+        ViewBalance, 
+        ViewTransactions, 
+        Logout,
+        Exit
+    }
+
+    public enum Bankstaff
+    {
+        UpdateName,
+        UpdateAddress,
+        UpdatePhoneNumber,
+        UpdateGender,
+        RevertTransaction,
+        DeleteAccount,
+        Exit
     }
 }
