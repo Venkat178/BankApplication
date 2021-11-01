@@ -23,49 +23,7 @@ namespace BankApplication.Services
             //bank.Employees.Add(employee);
             //bank.BankAccounts.Add(employee);
         }
-        public void UpdateDetailsOfCustomer(Bank bank,string userid)
-        {
-            int userfoundflag = 0;
-            foreach(var i in bank.BankAccounts)
-            {
-                if (i.Id == userid)
-                {
-                    userfoundflag = 1;
-                    Console.WriteLine("");
-                    BankStaffMenu choice = (BankStaffMenu)Enum.Parse(typeof(BankStaffMenu), Console.ReadLine(), true);
-                    switch (choice)
-                    {
-                        case BankStaffMenu.UpdateName:
-                            Console.Write("Enter the Correct Name   :    ");
-                            i.Name=Console.ReadLine();
-                            break;
-                        case BankStaffMenu.UpdateGender:
-                            Console.Write("Enter the Correct Gender   :    ");
-                            i.Gender = (GenderType)Enum.Parse(typeof(GenderType), Console.ReadLine(), true); 
-                            break;
-                        case BankStaffMenu.UpdatePhoneNumber:
-                            Console.Write("Enter the Correct PhoneNumber   :    ");
-                            i.PhoneNumber = Console.ReadLine();
-                            break;
-                        case BankStaffMenu.UpdateAddress:
-                            Console.Write("Enter the Correct Address   :    ");
-                            i.Address = Console.ReadLine();
-                            break;
-                    }
-                }
-            }
-            try
-            {
-                if (userfoundflag == 0)
-                {
-                    throw new UserNotFoundException("Sorry,User do not found with this Id .");
-                }
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
+        
         public void UpdateName(Bank bank,string userid,string HolderName)
         {
             foreach(var i in bank.BankAccounts)
