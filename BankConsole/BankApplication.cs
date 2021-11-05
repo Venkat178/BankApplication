@@ -60,8 +60,6 @@ namespace BankApplicationConsole
                 }
                 AdminObj.Address = Utilities.GetStringInput("Enter the Your Address  :  ", true);
                 AdminObj.Gender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.GetStringInput("Enter the Your Gender  :  ", true), true);
-                Console.WriteLine(AdminObj.BankId);
-                Console.WriteLine(Bank.Id);
                 AdminObj.Id = AdminObj.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
                 Console.WriteLine("The Admin Id is " + AdminObj.Id);
                 string password = Utilities.GetStringInput("Enter the new password  :  ", true);
@@ -86,7 +84,7 @@ namespace BankApplicationConsole
             Employee employee = new Employee();
             try
             {
-                employee.Name = Utilities.GetStringInput("Enter the Admin Name  :  ", true);
+                employee.Name = Utilities.GetStringInput("Enter the Employee Name  :  ", true);
                 employee.Admin = AdminObj;
                 BankService.ViewAllBankBranches();
                 employee.BranchName = Utilities.GetStringInput("Enter the Branch Name from the below  :  ", true);
@@ -436,6 +434,16 @@ namespace BankApplicationConsole
                             case Accountmenu.ViewAllAccounts:
                                 string Bankid= Utilities.GetStringInput("Enter the  Bank Id  :  ", true);
                                 BankService.ViewAllAccounts(Bankid);
+                                break;
+                            case Accountmenu.UpdateBankName:
+                                string BankId = Utilities.GetStringInput("Enter the  Bank Id  :  ", true);
+                                string bankname = Utilities.GetStringInput("Enter the  Bank Name  :  ", true);
+                                AccountService.UpdateBankName(BankId, bankname);
+                                break;
+                            case Accountmenu.UpdateBankBranchName:
+                                string bankId = Utilities.GetStringInput("Enter the  Bank Id  :  ", true);
+                                string bankbranchname = Utilities.GetStringInput("Enter the  Bank Name  :  ", true);
+                                AccountService.UpdateBankBranchName(bankId, bankbranchname);
                                 break;
                             case Accountmenu.Exit:
                                 user = null;

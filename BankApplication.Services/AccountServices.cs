@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace BankApplication.Services
 {
-    public class AccountServices:EmployeeServices
+    public class AccountServices : EmployeeServices
     {
-        public Admin AdminLogin(string userid,Admin AdminObj)
+        public Admin AdminLogin(string userid, Admin AdminObj)
         {
-            Admin admin= null;
+            Admin admin = null;
             foreach (var i in BankDatabase.Banks)
             {
                 if (i.Admin.Id == userid)
@@ -19,9 +19,9 @@ namespace BankApplication.Services
                     //string password1 = Utilities.GetStringInput("Enter the Password  :  ", true);
                     //if (i.Admin.Password == password1)
                     //{
-                        admin = i.Admin;
-                        //Console.WriteLine("hello");
-                        //this.AccountMenu(loginuserid);
+                    admin = i.Admin;
+                    //Console.WriteLine("hello");
+                    //this.AccountMenu(loginuserid);
                     //}
                     break;
                 }
@@ -97,6 +97,26 @@ namespace BankApplication.Services
             return id;
         }
 
-        //public void 
+        public void UpdateBankName(string BankId,string name)
+        {
+            foreach(var i in BankDatabase.Banks)
+            {
+                if(i.Id==BankId)
+                {
+                    i.BankName = name;
+                }
+            }
+        }
+
+        public void UpdateBankBranchName(string BankId, string branchname)
+        {
+            foreach (var i in BankDatabase.Banks)
+            {
+                if (i.BranchName == BankId)
+                {
+                    i.BankName = branchname;
+                }
+            }
+        }
     }
 }

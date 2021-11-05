@@ -52,6 +52,8 @@ namespace BankApplicationConsole
         DeleteAccountHolderAccount,
         RevertTransaction, 
         ViewAllAccounts,
+        UpdateBankName,
+        UpdateBankBranchName,
         Exit
     }
 }
