@@ -9,6 +9,7 @@ namespace BankApplicationConsole
         static void Main()
         {
             BankApplication bankapp = new BankApplication();
+            bankapp.Initialize();
         }
     }
 }

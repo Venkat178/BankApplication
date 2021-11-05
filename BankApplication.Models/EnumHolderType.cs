@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankApplication.Services
+namespace BankApplication.Models
 {
-    public enum BankStaffMenu
+    public enum EnumHolderType
     {
-        UpdateName,UpdatePhoneNumber,UpdateGender,UpdateAddress
+        AccountHolder,
+        Employee,
+        Admin
     }
 }

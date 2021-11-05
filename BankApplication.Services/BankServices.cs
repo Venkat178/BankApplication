@@ -7,58 +7,100 @@ namespace BankApplication.Services
 {
     public class BankServices
     {
-        public bool SetUpBank(Bank bank)
+        Bank Bank;
+        //Admin AdminObj;
+
+        public BankServices()
         {
-            if (string.IsNullOrEmpty(bank.BranchName))
-            {
-                throw new Exception("Empty Name is Not valid!");
-            }
-
-            if (string.IsNullOrEmpty(bank.IFSCCode))
-            {
-                throw new Exception("Empty IFSCCode is Not valid!");
-            }
-
-            if (string.IsNullOrEmpty(bank.BankName))
-            {
-                throw new Exception("Empty Name is Not valid!");
-            }
-
-            BankDatabase.Banks.Add(bank);
-            return true;
+            this.Bank = new Bank();
+        }
+        public Status SetUpBank(Bank bank)
+        {
+            Status status = new Status();
+            bank.Id = bank.BankName + DateTime.Now.ToString("yyyyMMddHHmmss");
+            bank.CurrencyCode = "INR";
+            status.IsSuccess = true;
+            return status;
         }
 
-        public string Register(Bank bank,BankAccount bankaccount)
+        public bool IsEmployee(string userid)
         {
-            if (string.IsNullOrEmpty(bankaccount.Name))
+            foreach(var i in BankDatabase.Employees)
             {
-                throw new Exception("Empty Name is Not valid!");
+                if(i.Id==userid)
+                {
+                    return true;
+                }
             }
+            return false;
+            //bool Isemployee = BankDatabase.Employees.Any(s => s.Id == userid);
+            //Console.WriteLine(Isemployee);
+            //return Isemployee;
+        }
 
-            if (bank.BankAccounts.Count != 0 && bank.BankAccounts.Any(p => p.Name == bankaccount.Name) == true)
+        public bool IsUser(string userid)
+        {
+            foreach(var i in BankDatabase.BankAccounts)
             {
-                throw new Exception("Account already exists!");
+                if(i.Id==userid)
+                {
+                    return true;
+                }
             }
+            return false;
+            //bool Isuser = BankDatabase.BankAccounts.Any(s => s.Id == userid);
+            //Console.WriteLine(Isuser);
+            //return Isuser;
+        }
 
-            if (string.IsNullOrEmpty(bankaccount.PhoneNumber))
+
+        public string Register(BankAccount bankaccount)
+        {
+            try
             {
-                throw new Exception("Empty Phone Number is not valid!");
+                if (BankDatabase.BankAccounts.Count != 0 && BankDatabase.BankAccounts.Any(p => p.Name == bankaccount.Name) == true)
+                {
+                    throw new Exception("Account already exists!");
+                }
+                int flag = 0;
+                foreach (var i in BankDatabase.Banks)
+                {
+                    if (i.BranchName == bankaccount.BranchName)
+                    {
+                        flag = 1;
+                        bankaccount.BankId = i.Id;
+                        Bank = i;
+                        break;
+                    }
+                }
+                if (flag == 0)
+                {
+                    throw new Exception("No bank found");
+                }
+                bankaccount.Type = EnumHolderType.AccountHolder;
+                Console.WriteLine(bankaccount.BankId);
+                if (bankaccount.BankId == string.Empty)
+                {
+                    throw new Exception("No bank found");
+                }
+                bankaccount.Id = bankaccount.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
+                Bank.BankAccounts.Add(bankaccount);
+                BankDatabase.BankAccounts.Add(bankaccount); 
             }
-
-            if (string.IsNullOrEmpty(bankaccount.Address))
+            catch(Exception ex)
             {
-                throw new Exception("Empty Address is Not valid!");
+                Console.WriteLine(ex.Message);
             }
             return bankaccount.Id;
         }
 
 
-        public BankAccount Login(Bank bank,string userid, string password)
+        public BankAccount Login(string userid)
         {
             BankAccount user = null;
-            foreach (var i in bank.BankAccounts)
+            foreach (var i in BankDatabase.BankAccounts)
             {
-                if (i.Id == userid && i.Password == password)
+                if (i.Id == userid)
                 {
                     user = i;
                 }
@@ -66,12 +108,12 @@ namespace BankApplication.Services
             return user;
         }
 
-        public BankAccount BankStaffLogin(Bank bank,string userid,string password)
+        public Employee EmployeeLogin(string userid)
         {
-            BankAccount user = null;
-            foreach(var i in bank.Employees)
+            Employee user = null;
+            foreach(var i in BankDatabase.Employees)
             {
-                if (i.Id == userid && i.Password == password)
+                if (i.Id == userid)
                 {
                     user = i;
                 }
@@ -79,11 +121,11 @@ namespace BankApplication.Services
             return user;
         }
 
-        public string Deposit(Bank bank,string userId, double amt)
+        public string Deposit( string userId,double amt)
         {
 
             string txnid = "TXN";
-            foreach (var i in bank.BankAccounts)
+            foreach (var i in BankDatabase.BankAccounts)
             {
                 if (i.Id == userId)
                 {
@@ -96,10 +138,10 @@ namespace BankApplication.Services
             return txnid;
         }
 
-        public string Withdraw (Bank bank, string userId, double amt)
+        public string Withdraw (string userId, double amt)
         {
             string txnid = "TXN";
-            foreach (var i in bank.BankAccounts)
+            foreach (var i in BankDatabase.BankAccounts)
             {
                 if (i.Id == userId)
                 {
@@ -120,12 +162,12 @@ namespace BankApplication.Services
         }
 
 
-        public string Transfer(Bank bank,string recuserId, string snduserId, double amt)
+        public string Transfer(string snduserId, string recuserId, double amt)
         {
             string txnid = "TXN";
-            foreach (var i in bank.BankAccounts)
+            foreach (var i in BankDatabase.BankAccounts)
             {
-                foreach (var j in bank.BankAccounts)
+                foreach (var j in BankDatabase.BankAccounts)
                 {
                     if (i.Id == snduserId && j.Id == recuserId)
                     {
@@ -149,10 +191,10 @@ namespace BankApplication.Services
             return txnid;
         }
 
-        public double ViewBalance(Bank bank,string userId)
+        public double ViewBalance(string userId)
         {
             double bal = 0.0;
-            foreach (var i in bank.BankAccounts)
+            foreach (var i in BankDatabase.BankAccounts)
             {
                 if (i.Id == userId)
                 {
@@ -162,15 +204,15 @@ namespace BankApplication.Services
             return bal;
         }
 
-        public void ViewTransactions(Bank bank,string userId)
+        public void ViewTransactions(string userId)
         {
-            foreach (var i in bank.BankAccounts)
+            foreach (var i in BankDatabase.BankAccounts)
             {
                 if (i.Id == userId)
                 {
                     foreach (var j in BankDatabase.TransList[i.Id])
                     {
-                        Console.WriteLine(j.SenderAccountId + "to" + j.RecieverAccountId + "of" + j.Amount);
+                        Console.WriteLine(j.SenderAccountId + " to " + j.RecieverAccountId + " of " + j.Amount);
                     }
                 }
             }
@@ -186,6 +228,20 @@ namespace BankApplication.Services
             foreach(var i in BankDatabase.Banks)
             {
                 Console.WriteLine(i.BranchName);
+            }
+        }
+
+        public void ViewAllAccounts(string Bankid)
+        {
+            foreach(var i in BankDatabase.Banks)
+            {
+                if(i.Id == Bankid)
+                {
+                    foreach(var j in i.BankAccounts)
+                    {
+                        Console.WriteLine(j.Name);
+                    }
+                }
             }
         }
     }

@@ -10,12 +10,11 @@ namespace BankApplication.Models
 		public string IFSCCode { get; set; }
 		public string BankName { get; set; }
 		public string CurrencyCode { get; set; }
+		public Admin Admin { get; set; }
 
-        public List<BankAccount> Employees = new List<BankAccount>();
+        public List<Employee> Employees = new List<Employee>();
 
         public List<BankAccount> BankAccounts = new List<BankAccount>();
-
-		//public static List<BankAccount> BankAccounts = new List<BankAccount>();
 
 
 

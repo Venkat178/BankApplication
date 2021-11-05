@@ -8,15 +8,14 @@ namespace BankApplicationConsole
 {
     public enum Mainmenu
     {
-        SetUpBank,
-        Register, 
+        SetUpBank=1, 
         Login,
         Exit
     }
 
     public enum Usermenu
     {
-        Deposit, 
+        Deposit=1, 
         Withdraw, 
         Transfer, 
         ViewBalance, 
@@ -25,14 +24,34 @@ namespace BankApplicationConsole
         Exit
     }
 
-    public enum Bankstaff
+    public enum Employeemenu
     {
-        UpdateName,
-        UpdateAddress,
-        UpdatePhoneNumber,
-        UpdateGender,
+        AccountHolderRegistration = 1,
+        UpdateAccountHolderName,
+        UpdateAccountHolderPhoneNumber,
+        UpdateAccountHolderGender,
+        UpdateAccountHolderAddress,
         RevertTransaction,
-        DeleteAccount,
+        DeleteAccountHolderAccount,
+        Exit
+    }
+
+    public enum Accountmenu
+    {
+        EmployeeRegistration=1,  
+        UpdateEmployeeName,
+        UpdateEmployeePhoneNumber,
+        UpdateEmployeeGender,
+        UpdateEmployeeAddress,
+        DeleteEmployeeAccount,
+        AccountHolderRegistration,
+        UpdateAccountHolderName,
+        UpdateAccountHolderPhoneNumber,
+        UpdateAccountHolderGender,
+        UpdateAccountHolderAddress,
+        DeleteAccountHolderAccount,
+        RevertTransaction, 
+        ViewAllAccounts,
         Exit
     }
 }

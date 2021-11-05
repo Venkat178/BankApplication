@@ -7,26 +7,35 @@ using System.Threading.Tasks;
 
 namespace BankApplication.Services
 {
-    public class BankStaff
+    public class EmployeeServices
     {
-        public void CreateAccount(Bank bank,BankAccount bankaccount)
+        public string AccountHolderRegister(BankAccount bankaccount)
         {
-            if (string.IsNullOrEmpty(bankaccount.Name))
-            {
-                throw new Exception("Empty Name is not valid!");
-            }
-
-            if (bank.BankAccounts.Count != 0 && bank.BankAccounts.Any(p => p.Name == bankaccount.Name) == true)
+            if (BankDatabase.BankAccounts.Count != 0 && BankDatabase.BankAccounts.Any(p => p.Name == bankaccount.Name) == true)
             {
                 throw new Exception("Account already exists!");
             }
-            //bank.Employees.Add(employee);
-            //bank.BankAccounts.Add(employee);
+            foreach (var i in BankDatabase.Banks)
+            {
+                if (i.BranchName == bankaccount.BranchName)
+                {
+                    bankaccount.BankId = i.Id;
+                }
+            }
+            bankaccount.Type = EnumHolderType.AccountHolder;
+            Console.WriteLine(bankaccount.BankId);
+            if (bankaccount.BankId == string.Empty)
+            {
+                throw new Exception("No bank found");
+            }
+            bankaccount.Id = bankaccount.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
+            BankDatabase.BankAccounts.Add(bankaccount);
+            return bankaccount.Id;
         }
-        
-        public void UpdateName(Bank bank,string userid,string HolderName)
+
+        public void UpdateAccountHolderName(string userid,string HolderName)
         {
-            foreach(var i in bank.BankAccounts)
+            foreach(var i in BankDatabase.BankAccounts)
             {
                 if (i.Id==userid)
                 {
@@ -35,9 +44,9 @@ namespace BankApplication.Services
             }
         }
 
-        public void UpdatePhoneNumber(Bank bank, string userid, string phonenumber)
+        public void UpdateAccountHolderPhoneNumber(string userid, string phonenumber)
         {
-            foreach (var i in bank.BankAccounts)
+            foreach (var i in BankDatabase.BankAccounts)
             {
                 if (i.Id == userid)
                 {
@@ -46,9 +55,9 @@ namespace BankApplication.Services
             }
         }
 
-        public void UpdateGender(Bank bank, string userid, GenderType gender)
+        public void UpdateAccountHolderGender(string userid, GenderType gender)
         {
-            foreach (var i in bank.BankAccounts)
+            foreach (var i in BankDatabase.BankAccounts)
             {
                 if (i.Id == userid)
                 {
@@ -57,9 +66,9 @@ namespace BankApplication.Services
             }
         }
 
-        public void UpdateAdress(Bank bank, string userid, string address)
+        public void UpdateAccountHolderAddress(string userid, string address)
         {
-            foreach (var i in bank.BankAccounts)
+            foreach (var i in BankDatabase.BankAccounts)
             {
                 if (i.Id == userid)
                 {
@@ -68,18 +77,18 @@ namespace BankApplication.Services
             }
         }
 
-        public void DeleteAccount(Bank bank, string userid)
+        public void DeleteAccountHolderAccount(string userid)
         {
-            foreach (var i in bank.BankAccounts)
+            foreach (var i in BankDatabase.BankAccounts)
             {
                 if (i.Id == userid)
                 {
-                    bank.BankAccounts.Remove(i);
+                    BankDatabase.BankAccounts.Remove(i);
                 }
             }
         }
 
-        public void revertTransaction(Bank bank, string transId)
+        public void revertTransaction(string transId)
         {
             int word1 = transId.IndexOf("TB");
             int word2 = transId.IndexOf("TB", word1 + 1);
@@ -90,9 +99,9 @@ namespace BankApplication.Services
             {
                 if ((i.SenderAccountId == senderId) & (i.RecieverAccountId == reciverId) & (i.TransactionId == transId))
                 {
-                    foreach (var j in bank.BankAccounts)
+                    foreach (var j in BankDatabase.BankAccounts)
                     {
-                        foreach (var k in bank.BankAccounts)
+                        foreach (var k in BankDatabase.BankAccounts)
                         {
                             if ((j.Id == senderId) & (k.Id == reciverId))
                             {
@@ -111,7 +120,7 @@ namespace BankApplication.Services
 
         public string returnId(Bank bank, string HolderName)
         {
-            string id = "";
+            string id = string.Empty;
             foreach (var i in bank.BankAccounts)
             {
                 if (i.Name == HolderName)
