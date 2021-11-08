@@ -69,7 +69,6 @@ namespace BankApplicationConsole
                 }
                 AdminObj.Password = password;
                 BankDatabase.Banks.Add(Bank);
-                BankDatabase.Admins.Add(AdminObj);
                 
             }
             catch (Exception ex)
@@ -187,7 +186,7 @@ namespace BankApplicationConsole
                         string password = Utilities.GetStringInput("Enter the Password  :  ", true);
                         try
                         {
-                            bool IsAdmin = BankDatabase.Admins.Any(s => s.Id == loginuserid && s.Password == password);
+                            bool IsAdmin = BankDatabase.Banks.Any(s => s.Admin.Id == loginuserid && s.Admin.Password == password);
                             if (IsAdmin)
                             {
                                 this.AccountMenu(loginuserid);

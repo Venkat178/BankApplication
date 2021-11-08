@@ -23,36 +23,6 @@ namespace BankApplication.Services
             return status;
         }
 
-        public bool IsEmployee(string userid)
-        {
-            foreach(var i in BankDatabase.Employees)
-            {
-                if(i.Id==userid)
-                {
-                    return true;
-                }
-            }
-            return false;
-            //bool Isemployee = BankDatabase.Employees.Any(s => s.Id == userid);
-            //Console.WriteLine(Isemployee);
-            //return Isemployee;
-        }
-
-        public bool IsUser(string userid)
-        {
-            foreach(var i in BankDatabase.BankAccounts)
-            {
-                if(i.Id==userid)
-                {
-                    return true;
-                }
-            }
-            return false;
-            //bool Isuser = BankDatabase.BankAccounts.Any(s => s.Id == userid);
-            //Console.WriteLine(Isuser);
-            //return Isuser;
-        }
-
 
         public string Register(BankAccount bankaccount)
         {
