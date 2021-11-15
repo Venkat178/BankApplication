@@ -14,7 +14,7 @@ namespace BankApplication.Models
         public GenderType Gender { set; get; }
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
-        public EnumHolderType Type { get; set; }
+        public UserType Type { get; set; }
 
         public List<Transaction> Transactions = new List<Transaction>();
     }

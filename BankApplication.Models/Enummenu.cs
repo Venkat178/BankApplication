@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BankApplicationConsole
+namespace BankApplication.Models
 {
     public enum Mainmenu
     {
@@ -50,8 +50,7 @@ namespace BankApplicationConsole
         UpdateAccountHolderGender,
         UpdateAccountHolderAddress,
         DeleteAccountHolderAccount,
-        RevertTransaction, 
-        ViewAllAccounts,
+        RevertTransaction,
         UpdateBankName,
         UpdateBankBranchName,
         Exit

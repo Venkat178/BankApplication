@@ -19,6 +19,7 @@ namespace BankApplication.Models
             }
             catch(Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 GetStringInput(helpText,isRequired);
             }
             

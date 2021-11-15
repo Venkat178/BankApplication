@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BankApplication.Models
 {
-    public enum EnumHolderType
+    public enum UserType
     {
         AccountHolder,
         Employee,

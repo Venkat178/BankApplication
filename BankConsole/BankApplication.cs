@@ -4,90 +4,93 @@ using BankApplication.Models;
 using BankApplication.Services;
 using System.Collections.Generic;
 
-namespace BankApplicationConsole
+namespace BankApplication
 {
     class BankApplication
     {
-        public BankServices BankService;
-        public Bank Bank;
-        //public Employee Employee;
-        public EmployeeServices EmployeeService;
-        public AccountServices AccountService;
-        public Admin AdminObj;
-        public Status status;
-
         public void Initialize()
-        {
-            this.BankService = new BankServices();
-            //this.Bank = new Bank();
-            //this.Employee = new Employee();
-            this.AccountService = new AccountServices();
-            this.AdminObj = new Admin();
-            this.status = new Status();
+        {   
             this.MainMenu();
         }
 
-        public Bank SetUpBank(Status status)
+        public Bank SetUpBank()
         {
-            Bank Bank = new Bank();
-            Bank.BankName = Utilities.GetStringInput("Enter the Bank name  :  ", true);
-            Bank.BranchName = Utilities.GetStringInput("Enter the Branch Name  :  ", true);
-            Bank.IFSCCode = Utilities.GetStringInput("Enter the IFSC Code  :  ", true);
-            Bank.Id = Bank.BankName + DateTime.Now.ToString("yyyyMMddHHmmss");
-            Bank.CurrencyCode = "INR";
-            status = BankService.SetUpBank(Bank);
-            if (status.IsSuccess)
-            {
-                Console.WriteLine("Bank is Successfuly Created");
-            }
-            else
-            {
-                Console.WriteLine("Unable to save the details");
-            }
+            Bank bank = new Bank();
+            Status status = new Status();
+            BankService bankservice = new BankService();
+            bank.BankName = Utilities.GetStringInput("Enter the Bank name  :  ", true);
+            bank.BranchName = Utilities.GetStringInput("Enter the Branch Name  :  ", true);
+            bank.IFSCCode = Utilities.GetStringInput("Enter the IFSC Code  :  ", true);
+            bank.Id = bank.BankName + DateTime.Now.ToString("yyyyMMddHHmmss");
             Console.WriteLine("Please provide admin details to set up admin");
-            Admin AdminObj = new Admin();
-            Bank.Admin = AdminObj;
+            bank.Admin = new Admin();
             try
             {
-                AdminObj.Name = Utilities.GetStringInput("Enter the Admin Name  :  ", true);
-                AdminObj.BranchName = Bank.BranchName;
-                AdminObj.BankId = Bank.Id;
-                AdminObj.Type = EnumHolderType.Admin;
-                AdminObj.PhoneNumber = Utilities.GetStringInput("Enter the Phone number  :  ", true);
-                if(AdminObj.PhoneNumber.Length!=10)
+                bank.Admin.Name = Utilities.GetStringInput("Enter the Admin Name  :  ", true);
+                bank.Admin.BranchName = bank.BranchName;
+                bank.Admin.BankId = bank.Id;
+                bank.Admin.Type = UserType.Admin;
+                bank.Admin.PhoneNumber = Utilities.GetStringInput("Enter the Phone number  :  ", true);
+                if(bank.Admin.PhoneNumber.Length!=10)
                 {
                     throw new PhoneNumberNotValidException("Phone number is not valid");
                 }
-                AdminObj.Address = Utilities.GetStringInput("Enter the Your Address  :  ", true);
-                AdminObj.Gender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.GetStringInput("Enter the Your Gender  :  ", true), true);
-                AdminObj.Id = AdminObj.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
-                Console.WriteLine("The Admin Id is " + AdminObj.Id);
+                bank.Admin.Address = Utilities.GetStringInput("Enter the Your Address  :  ", true);
+                bank.Admin.Gender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.GetStringInput("Enter the Your Gender  :  ", true), true);
+                try
+                {
+                    bank.Admin.Id = bank.Admin.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                Console.WriteLine("The Admin Id is " + bank.Admin.Id);
                 string password = Utilities.GetStringInput("Enter the new password  :  ", true);
                 while (password != Utilities.GetStringInput("Re-Enter the password  :  ", true))
                 {
                     Console.WriteLine("Password does not matched! Please try Again");
                 }
-                AdminObj.Password = password;
-                BankDatabase.Banks.Add(Bank);
+                bank.Admin.Password = password;
+                BankDatabase.Admins.Add(bank.Admin);
+                status = bankservice.SetUpBank(bank);
                 
+                //Console.WriteLine(bank.CurrencyCode);
+                if (status.IsSuccess)
+                {
+                    Console.WriteLine("Bank is Successfuly Created");
+                }
+                else
+                {
+                    Console.WriteLine("Unable to save the details");
+                }      
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
-            return Bank;
+            return bank;
         }
 
         public string EmployeeRegistration()
         {
+            BankService bankservice = new BankService();
             Employee employee = new Employee();
             try
             {
                 employee.Name = Utilities.GetStringInput("Enter the Employee Name  :  ", true);
-                employee.Admin = AdminObj;
-                BankService.ViewAllBankBranches();
+                bankservice.ViewAllBankBranches();
                 employee.BranchName = Utilities.GetStringInput("Enter the Branch Name from the below  :  ", true);
-                employee.Type = EnumHolderType.Employee;
+                Bank bank = BankDatabase.Banks.Find(bank => bank.BranchName == employee.BranchName);
+                if (bank != null)
+                {
+                    employee.BankId = bank.Id;
+                }
+                else
+                {
+                    throw new Exception("No bank found");
+                }
+                employee.Type = UserType.Employee;
                 employee.PhoneNumber = Utilities.GetStringInput("Enter the Phone number  :  ", true);
                 employee.Id = employee.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
                 if (employee.PhoneNumber.Length != 10)
@@ -96,27 +99,14 @@ namespace BankApplicationConsole
                 }
                 employee.Address = Utilities.GetStringInput("Enter the Your Address  :  ", true);
                 employee.Gender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.GetStringInput("Enter the Your Gender  :  ", true), true);
-                //bank.Employees.Add(Employee);
-                int flag = 0;
-                foreach (var i in BankDatabase.Banks)
-                {
-                    if (i.BranchName == employee.BranchName)
-                    {
-                        flag = 1;
-                        employee.BankId = i.Id;
-                        break;
-                    }
-                }
-                if (flag == 0)
-                {
-                    throw new Exception("No bank found");
-                }
+                employee.Admin = bank.Admin;
                 string password = Utilities.GetStringInput("Enter the new password  :  ", true);
                 while (password != Utilities.GetStringInput("Re-Enter the password  :  ", true))
                 {
                     Console.WriteLine("Password does not matched! Please try Again");
                 }
                 employee.Password = password;
+                bank.Employees.Add(employee);
                 BankDatabase.Employees.Add(employee);
             }
             catch(Exception ex )
@@ -129,14 +119,24 @@ namespace BankApplicationConsole
         
         public string AccountHolderRegistration()
         {
+            BankService bankservice = new BankService();
             BankAccount bankaccount = new BankAccount();
             try
             {   
                 bankaccount.Name = Utilities.GetStringInput("Enter the Your Name   :   ", true);
                 //bankaccount.Admin = AdminObj;
                 Console.WriteLine("Our Branches are   :   ");
-                BankService.ViewAllBankBranches();
+                bankservice.ViewAllBankBranches();
                 bankaccount.BranchName = Utilities.GetStringInput("Enter the Branch Name from the above  :  ", true);
+                Bank bank = BankDatabase.Banks.Find(bank => bank.BranchName == bankaccount.BranchName);
+                if (bank != null)
+                {
+                    bankaccount.BankId = bank.Id;
+                }
+                else
+                {
+                    throw new Exception("No bank found");
+                }
                 bankaccount.PhoneNumber = Utilities.GetStringInput("Enter the Phone number  :  ", true);
                 if (bankaccount.PhoneNumber.Length != 10)
                 {
@@ -144,8 +144,9 @@ namespace BankApplicationConsole
                 }
                 bankaccount.Address = Utilities.GetStringInput("Enter the Your Address  :  ", true);
                 bankaccount.Gender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.GetStringInput("Enter the Your Gender  :  ", true), true);
-                string userid = BankService.Register(bankaccount);
-                BankDatabase.TransList[bankaccount.Id] = new List<Transaction>();
+                
+                string userid = bankservice.Register(bank,bankaccount);
+                bankaccount.Id = bankaccount.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
                 string password = Utilities.GetStringInput("Enter the new password  :  ", true);
                 while (password != Utilities.GetStringInput("Re-Enter the password  :  ", true))
                 {
@@ -172,9 +173,7 @@ namespace BankApplicationConsole
                     case Mainmenu.SetUpBank:
                         try
                         {
-                            
-                            Status status = new Status();
-                            this.SetUpBank(status);
+                            this.SetUpBank();
                         }
                         catch (Exception ex)
                         {
@@ -182,26 +181,56 @@ namespace BankApplicationConsole
                         }
                         break;
                     case Mainmenu.Login:
+                        BankService bankservice = new BankService();
                         string loginuserid = Utilities.GetStringInput("Enter the user Id  :  ", true);
-                        string password = Utilities.GetStringInput("Enter the Password  :  ", true);
                         try
                         {
-                            bool IsAdmin = BankDatabase.Banks.Any(s => s.Admin.Id == loginuserid && s.Admin.Password == password);
-                            if (IsAdmin)
+                            Admin admin = BankDatabase.Admins.Find(admin => admin.Id == loginuserid);
+                            if(admin!=null)
                             {
-                                this.AccountMenu(loginuserid);
+                                string adminpassword = Utilities.GetStringInput("Enter the Password  :  ", true);
+                                if(adminpassword==admin.Password)
+                                {
+                                    Admin loginadmin = bankservice.AdminLogin(loginuserid, adminpassword);
+                                    Console.WriteLine("Login Successfully");
+                                    this.AccountMenu(loginadmin, loginuserid);
+                                }
+                                else
+                                {
+                                    throw new WrongPasswordException("Wrong password");
+                                }
                                 break;
                             }
-                            bool IsEmployee = BankDatabase.Employees.Any(s => s.Id == loginuserid && s.Password == password);
-                            if (IsEmployee)
+                            Employee employee = BankDatabase.Employees.Find(employee => employee.Id == loginuserid);
+                            if (employee != null)
                             {
-                                this.BankStaff(loginuserid);
+                                string employeepassword = Utilities.GetStringInput("Enter the Password  :  ", true);
+                                if (employeepassword == employee.Password)
+                                {
+                                    Employee loginemployee = bankservice.EmployeeLogin(loginuserid, employeepassword);
+                                    Console.WriteLine("Login Successfully");
+                                    this.BankStaff(loginemployee,loginuserid);
+                                }
+                                else
+                                {
+                                    throw new WrongPasswordException("Wrong password");
+                                }
                                 break;
                             }
-                            bool IsUser = BankDatabase.BankAccounts.Any(s => s.Id == loginuserid && s.Password == password);
-                            if (IsUser)
+                            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == loginuserid);
+                            if (bankaccount != null)
                             {
-                                this.UserMenu(loginuserid);
+                                string bankaccountpassword = Utilities.GetStringInput("Enter the Password  :  ", true);
+                                if (bankaccountpassword == bankaccount.Password)
+                                {
+                                    BankAccount loginuser = bankservice.Login(loginuserid, bankaccountpassword);
+                                    Console.WriteLine("Login Successfully");
+                                    this.UserMenu(loginuser, loginuserid);
+                                }
+                                else
+                                {
+                                    throw new WrongPasswordException("Wrong password");
+                                }
                                 break;
                             }
                             else
@@ -233,15 +262,15 @@ namespace BankApplicationConsole
 
         
 
-        public void UserMenu(string uid)
+        public void UserMenu(BankAccount bankaccount,string uid)
         {
+            BankService bankservice = new BankService();
             bool menuflag = true;
             while(menuflag)
             {
                 try
                 {
-                    BankAccount user = BankService.Login(uid);
-                    if (user != null)
+                    if (bankaccount != null)
                     {
                         Console.WriteLine("1. Deposit \n2. Withdraw \n3. Transfer \n4. View Balance \n5. View Transactions \n6. Logout .");
                         Console.Write("Please select your option   :   ");
@@ -250,14 +279,14 @@ namespace BankApplicationConsole
                         {
                             case Usermenu.Deposit:
                                 double amt = Convert.ToDouble(Utilities.GetStringInput("Enter the Amount to Deposit  :  ", true));
-                                BankService.Deposit(uid, amt);
+                                bankservice.Deposit(bankaccount,amt);
                                 break;
                             case Usermenu.Withdraw:
                                 try
                                 {
                                     Console.Write("Enter the Amount  :  ");
                                     double amt1 = Convert.ToDouble(Console.ReadLine());
-                                    BankService.Withdraw(uid, amt1);
+                                    bankservice.Withdraw(bankaccount,amt1);
                                 }
                                 catch (Exception e)
                                 {
@@ -269,17 +298,17 @@ namespace BankApplicationConsole
                                 string recuid = Console.ReadLine();
                                 Console.Write("Enter the Amount  :  ");
                                 double amt2 = Convert.ToDouble(Console.ReadLine());
-                                BankService.Transfer(uid, recuid, amt2);
+                                bankservice.Transfer(bankaccount, recuid, amt2);
                                 break;
                             case Usermenu.ViewBalance:
-                                double balance = BankService.ViewBalance(uid);
+                                double balance = bankservice.ViewBalance(bankaccount);
                                 Console.WriteLine("Your Balance is " + balance);
                                 break;
                             case Usermenu.ViewTransactions:
-                                BankService.ViewTransactions(uid);
+                                bankservice.ViewTransactions(bankaccount);
                                 break;
                             case Usermenu.Logout:
-                                user = null;
+                                bankaccount= null;
                                 menuflag = false;
                                 break;
                             default:
@@ -301,17 +330,17 @@ namespace BankApplicationConsole
             
         }
 
-        public void BankStaff(string userid)
+        public void BankStaff(Employee employee,string userid)
         {
+            EmployeeService employeeservice = new EmployeeService();
             bool employeemenuflag = true;
             while(employeemenuflag)
             {
                 try
                 {
-                    Employee user = BankService.EmployeeLogin(userid);
-                    if (user != null)
+                    if (employee != null)
                     {
-                        Console.WriteLine("1.AccountHolderRegistration \n2. UpdateName \n3. UpdatePhoneNumber \n4. UpdateGender \n5. UpdateAddress \n6. RevertTransaction\n7. DeleteAccount\n8.Exit");
+                        Console.WriteLine("1. AccountHolderRegistration \n2. UpdateAccountHolderName \n3. UpdateAccountHolderPhoneNumber \n4. UpdateAccountHolderGender \n5. UpdateAccountHolderAddress \n6. RevertTransaction\n7. DeleteAccountHolderAccount\n8.Exit");
                         Console.Write("Please select your option   :   ");
                         Employeemenu option2 = (Employeemenu)Enum.Parse(typeof(Employeemenu), Console.ReadLine(), true);
                         switch (option2)
@@ -322,29 +351,29 @@ namespace BankApplicationConsole
                                 break;
                             case Employeemenu.UpdateAccountHolderName:
                                 string name = Utilities.GetStringInput("Enter the Name to Update  :  ", true);
-                                EmployeeService.UpdateAccountHolderName(userid, name);
+                                employeeservice.UpdateAccountHolderName(userid, name);
                                 break;
                             case Employeemenu.UpdateAccountHolderPhoneNumber:
                                 string phonenumber = Utilities.GetStringInput("Enter the Phone Number to Update  :  ", true);
-                                EmployeeService.UpdateAccountHolderPhoneNumber(userid, phonenumber);
+                                employeeservice.UpdateAccountHolderPhoneNumber(userid, phonenumber);
                                 break;
                             case Employeemenu.UpdateAccountHolderGender:
                                 GenderType gender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.GetStringInput("Enter the Your Gender   :   ", true), true);
-                                EmployeeService.UpdateAccountHolderGender(userid, gender);
+                                employeeservice.UpdateAccountHolderGender(userid, gender);
                                 break;
                             case Employeemenu.UpdateAccountHolderAddress:
                                 string address = Utilities.GetStringInput("Enter the Address to Update  :  ", true);
-                                EmployeeService.UpdateAccountHolderAddress(userid, address);
+                                employeeservice.UpdateAccountHolderAddress(userid, address);
                                 break;
                             case Employeemenu.RevertTransaction:
                                 string transid = Utilities.GetStringInput("Enter the TransactionID  :  ", true);
-                                EmployeeService.revertTransaction(transid);
+                                employeeservice.revertTransaction(transid);
                                 break;
                             case Employeemenu.DeleteAccountHolderAccount:
-                                EmployeeService.DeleteAccountHolderAccount(userid);
+                                employeeservice.DeleteAccountHolderAccount(userid);
                                 break;
                             case Employeemenu.Exit:
-                                user = null;
+                                employee = null;
                                 employeemenuflag = false;
                                 break;
                             default:
@@ -365,17 +394,18 @@ namespace BankApplicationConsole
         }
 
 
-        public void AccountMenu(string userid)
+        public void AccountMenu(Admin admin,string userid)
         {
+            AccountService accountservice = new AccountService();
             try
             {
                 bool accountmenuflag = true;
                 while (accountmenuflag)
                 {
-                    Admin user = AccountService.AdminLogin(userid, AdminObj);
-                    if (user != null)
+ 
+                    if (admin != null)
                     {
-                        Console.WriteLine("1.EmployeeRegistration \n2. UpdateEmployeeName \n3. UpdateEmployeePhoneNumber \n4. UpdateEmployeeGender \n5. UpdateEmployeeAddress \n6. DeleteEmployeeAccount\n7. AccountHolder Registration\n8. UpdateAccountHolderName \n9. UpdateAccountHolderPhoneNumber \n10. UpdateAccountHolderGender \n11. UpdateAccountHolderAddress \n12. DeleteAccountHolderAccount\n13. RevertTransaction\n14. VeiwAllAccounts\n15. Exit");
+                        Console.WriteLine("1. EmployeeRegistration \n2. UpdateEmployeeName \n3. UpdateEmployeePhoneNumber \n4. UpdateEmployeeGender \n5. UpdateEmployeeAddress \n6. DeleteEmployeeAccount\n7. AccountHolder Registration\n8. UpdateAccountHolderName \n9. UpdateAccountHolderPhoneNumber \n10. UpdateAccountHolderGender \n11. UpdateAccountHolderAddress \n12. DeleteAccountHolderAccount\n13. RevertTransaction\n14. UpdateBankName\n15. UpdateBankBranchName\n16. Exit");
                         Console.Write("Please select your option   :   ");
                         Accountmenu option2 = (Accountmenu)Enum.Parse(typeof(Accountmenu), Console.ReadLine(), true);
                         switch (option2)
@@ -386,22 +416,22 @@ namespace BankApplicationConsole
                                 break;
                             case Accountmenu.UpdateEmployeeName:
                                 string employeename = Utilities.GetStringInput("Enter the Name to Update  :  ", true);
-                                AccountService.UpdateEmployeeName(userid, employeename);
+                                accountservice.UpdateEmployeeName(userid, employeename);
                                 break;
                             case Accountmenu.UpdateEmployeePhoneNumber:
                                 string employeephonenumber = Utilities.GetStringInput("Enter the Phone Number to Update  :  ", true);
-                                AccountService.UpdateEmployeeName(userid, employeephonenumber);
+                                accountservice.UpdateEmployeeName(userid, employeephonenumber);
                                 break;
                             case Accountmenu.UpdateEmployeeGender:
                                 GenderType employeegender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.GetStringInput("Enter the Your Gender   :   ", true), true);
-                                AccountService.UpdateEmployeeGender(userid, employeegender);
+                                accountservice.UpdateEmployeeGender(userid, employeegender);
                                 break;
                             case Accountmenu.UpdateEmployeeAddress:
                                 string employeeaddress = Utilities.GetStringInput("Enter the Address to Update  :  ", true);
-                                AccountService.UpdateEmployeeAddress(userid, employeeaddress);
+                                accountservice.UpdateEmployeeAddress(userid, employeeaddress);
                                 break;
                             case Accountmenu.DeleteEmployeeAccount:
-                                AccountService.DeleteEmployeeAccount(userid);
+                                accountservice.DeleteEmployeeAccount(userid);
                                 break;
                             case Accountmenu.AccountHolderRegistration:
                                 string accountholderid = this.AccountHolderRegistration();
@@ -409,43 +439,39 @@ namespace BankApplicationConsole
                                 break;
                             case Accountmenu.UpdateAccountHolderName:
                                 string name = Utilities.GetStringInput("Enter the Name to Update  :  ", true);
-                                //AccountService.UpdateAccountHolderName(userid, name);
+                                accountservice.UpdateAccountHolderName(userid, name);
                                 break;
                             case Accountmenu.UpdateAccountHolderPhoneNumber:
                                 string phonenumber = Utilities.GetStringInput("Enter the Phone Number to Update  :  ", true);
-                                //AccountService.UpdateAccountHolderPhoneNumber(userid, phonenumber);
+                                accountservice.UpdateAccountHolderPhoneNumber(userid, phonenumber);
                                 break;
                             case Accountmenu.UpdateAccountHolderGender:
                                 GenderType gender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.GetStringInput("Enter the Your Gender   :   ", true), true);
-                                //AccountService.UpdateAccountHolderGender(userid, gender);
+                                accountservice.UpdateAccountHolderGender(userid, gender);
                                 break;
                             case Accountmenu.UpdateAccountHolderAddress:
                                 string address = Utilities.GetStringInput("Enter the Address to Update  :  ", true);
-                                //AccountService.UpdateAccountHolderAddress(userid, address);
+                                accountservice.UpdateAccountHolderAddress(userid, address);
                                 break;
                             case Accountmenu.DeleteAccountHolderAccount:
-                                //AccountService.DeleteAccountHolderAccount(userid);
+                                accountservice.DeleteAccountHolderAccount(userid);
                                 break;
                             case Accountmenu.RevertTransaction:
                                 string transid = Utilities.GetStringInput("Enter the TransactionID  :  ", true);
-                                //AccountService.revertTransaction(transid);
-                                break;
-                            case Accountmenu.ViewAllAccounts:
-                                string Bankid= Utilities.GetStringInput("Enter the  Bank Id  :  ", true);
-                                BankService.ViewAllAccounts(Bankid);
+                                accountservice.revertTransaction(transid);
                                 break;
                             case Accountmenu.UpdateBankName:
                                 string BankId = Utilities.GetStringInput("Enter the  Bank Id  :  ", true);
                                 string bankname = Utilities.GetStringInput("Enter the  Bank Name  :  ", true);
-                                AccountService.UpdateBankName(BankId, bankname);
+                                accountservice.UpdateBankName(BankId, bankname);
                                 break;
                             case Accountmenu.UpdateBankBranchName:
                                 string bankId = Utilities.GetStringInput("Enter the  Bank Id  :  ", true);
                                 string bankbranchname = Utilities.GetStringInput("Enter the  Bank Name  :  ", true);
-                                AccountService.UpdateBankBranchName(bankId, bankbranchname);
+                                accountservice.UpdateBankBranchName(bankId, bankbranchname);
                                 break;
                             case Accountmenu.Exit:
-                                user = null;
+                                admin = null;
                                 accountmenuflag = false;
                                 break;
                             default:

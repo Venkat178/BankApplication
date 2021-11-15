@@ -4,7 +4,7 @@ namespace BankApplication.Models
 {
     public class Transaction
     {
-        public string TransactionId { set; get; }
+        public string Id { set; get; }
         public string SenderAccountId { set; get; }
         public string RecieverAccountId { set; get; }
         public double Amount { set; get; }
@@ -13,7 +13,7 @@ namespace BankApplication.Models
 
         public Transaction(string senderId, string recieverId, double amt, string bankId, TransactionType type)
         {
-            TransactionId = "TXN" + senderId + recieverId + bankId + DateTime.Now.ToString("yyyyMMddHHmmss");
+            Id = "TXN" + senderId + recieverId + bankId + DateTime.Now.ToString("yyyyMMddHHmmss");
             Type = type;
             SenderAccountId = senderId;
             RecieverAccountId = recieverId;

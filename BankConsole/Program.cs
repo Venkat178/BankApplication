@@ -2,7 +2,7 @@
 using BankApplication.Models;
 using BankApplication.Services;
 
-namespace BankApplicationConsole
+namespace BankApplication
 {
     class Program
     {
