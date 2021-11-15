@@ -9,30 +9,6 @@ namespace BankApplication.Services
 {
     public class EmployeeService
     {
-        public string AccountHolderRegister(BankAccount bankaccount)
-        {
-            if (BankDatabase.BankAccounts.Count != 0 && BankDatabase.BankAccounts.Any(p => p.Name == bankaccount.Name) == true)
-            {
-                throw new Exception("Account already exists!");
-            }
-            foreach (var i in BankDatabase.Banks)
-            {
-                if (i.BranchName == bankaccount.BranchName)
-                {
-                    bankaccount.BankId = i.Id;
-                }
-            }
-            bankaccount.Type = UserType.AccountHolder;
-            Console.WriteLine(bankaccount.BankId);
-            if (bankaccount.BankId == string.Empty)
-            {
-                throw new Exception("No bank found");
-            }
-            bankaccount.Id = bankaccount.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
-            BankDatabase.BankAccounts.Add(bankaccount);
-            return bankaccount.Id;
-        }
-
         public void UpdateAccountHolderName(string userid, string HolderName)
         {
             BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
