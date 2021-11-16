@@ -7,18 +7,46 @@ namespace BankApplication.Services
 {
     public class BankService
     {
-        public Status SetUpBank(Bank bank)
+        public Status SetUpBank(Bank bank, Employee admin)
         {
             Status status = new Status();
-            bank.Id = bank.BankName + DateTime.Now.ToString("yyyyMMddHHmmss");
-            bank.CurrencyCode = "INR";
-            BankDatabase.Banks.Add(bank);
-            status.IsSuccess = true;
+            try
+            {
+                bank.Id = bank.Name + DateTime.Now.ToString("yyyyMMddHHmmss");
+                bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "INR", ExchangeRate = 1 });
+
+                admin.Id = bank.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
+                admin.Role = "Admin";
+                bank.Employees.Add(admin);
+
+                BankDatabase.Banks.Add(bank);
+                status.IsSuccess = true;
+            }
+            catch (Exception ex)
+            {
+                status.IsSuccess = false;
+                status.Message = "Unable to create a bank...!";
+            }
+
             return status;
         }
 
+        public void Deposit()
+        {
 
-        public string Register(Bank bank,BankAccount bankaccount)
+        }
+
+        public void WithDraw()
+        {
+
+        }
+
+        public void Transfer()
+        {
+
+        }
+
+        public string Register(Bank bank, BankAccount bankaccount)
         {
             if (BankDatabase.BankAccounts.Count != 0 && BankDatabase.BankAccounts.Any(p => p.Name == bankaccount.Name) == true)
             {
@@ -26,7 +54,7 @@ namespace BankApplication.Services
             }
             bankaccount.Type = UserType.AccountHolder;
             bank.BankAccounts.Add(bankaccount);
-            BankDatabase.BankAccounts.Add(bankaccount); 
+            BankDatabase.BankAccounts.Add(bankaccount);
             return bankaccount.Id;
         }
 
@@ -41,18 +69,18 @@ namespace BankApplication.Services
             return user;
         }
 
-        public BankAccount Login(string userid,string password)
+        public BankAccount Login(string userid, string password)
         {
             BankAccount user = null;
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id ==userid && bankaccount.Password == password);
-            if(bankaccount!=null)
+            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid && bankaccount.Password == password);
+            if (bankaccount != null)
             {
                 user = bankaccount;
             }
             return user;
         }
 
-        public Employee EmployeeLogin(string userid,string password)
+        public Employee EmployeeLogin(string userid, string password)
         {
             Employee user = null;
             Employee employee = BankDatabase.Employees.Find(employee => employee.Id == userid && employee.Password == password);
@@ -64,7 +92,7 @@ namespace BankApplication.Services
         }
 
 
-        public string Deposit(BankAccount bankaccount,double amt)
+        public string Deposit(BankAccount bankaccount, double amt)
         {
             string txnid = "TXN";
             bankaccount.Balance += amt;
@@ -74,7 +102,7 @@ namespace BankApplication.Services
             return txnid;
         }
 
-        public string Withdraw (BankAccount bankaccount, double amt)
+        public string Withdraw(BankAccount bankaccount, double amt)
         {
             string txnid = "TXN";
             if (bankaccount.Balance >= amt)
@@ -133,7 +161,7 @@ namespace BankApplication.Services
 
         public void ViewAllBankBranches()
         {
-            foreach(var i in BankDatabase.Banks)
+            foreach (var i in BankDatabase.Banks)
             {
                 Console.WriteLine(i.BranchName);
             }

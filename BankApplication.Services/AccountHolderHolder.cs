@@ -1,117 +1,20 @@
 ﻿using System;
+using BankApplication.Models;
 using System.Collections.Generic;
 using System.Linq;
-using BankApplication.Models;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace BankApplication.Services
 {
-    public class AccountService
+    public class EmployeeService
     {
-        Login,
-        Register,
-        ForgotPassword,
-        ResetPassword
-
-
-        public void UpdateEmployeeName(string userid, string EmployeeName)
-        {
-            Employee employee= BankDatabase.Employees.Find(employee => employee.Id == userid);
-            if (employee!=null)
-            {
-                employee.Name = EmployeeName;
-            }
-            else
-            {
-                throw new UserNotFoundException("Employee not found");
-            }
-        }
-
-        public void UpdateEmployeePhoneNumber(string userid, string phonenumber)
-        {
-            Employee employee = BankDatabase.Employees.Find(employee => employee.Id == userid);
-            if (employee != null)
-            {
-                employee.PhoneNumber = phonenumber;
-            }
-            else
-            {
-                throw new UserNotFoundException("Employee not found");
-            }
-        }
-
-        public void UpdateEmployeeGender(string userid, GenderType gender)
-        {
-            Employee employee = BankDatabase.Employees.Find(employee => employee.Id == userid);
-            if (employee != null)
-            {
-                employee.Gender = gender;
-            }
-            else
-            {
-                throw new UserNotFoundException("Employee not found");
-            }
-        }
-
-        public void UpdateEmployeeAddress(string userid, string address)
-        {
-            Employee employee = BankDatabase.Employees.Find(employee => employee.Id == userid);
-            if (employee != null)
-            {
-                employee.Address = address;
-            }
-            else
-            {
-                throw new UserNotFoundException("Employee not found");
-            }
-        }
-
-        public void DeleteEmployeeAccount(string userid)
-        {
-            Employee employee = BankDatabase.Employees.Find(employee => employee.Id == userid);
-            if (employee != null)
-            {
-                BankDatabase.Employees.Remove(employee);
-            }
-            else
-            {
-                throw new UserNotFoundException("Employee not found");
-            }
-        }
-
-        public void UpdateBankName(string Bankid,string name)
-        {
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == Bankid);
-            if(bank!=null)
-            {
-                bank.BankName = name;
-            }
-            else
-            {
-                throw new UserNotFoundException("Bank not found");
-            }
-        }
-
-        public void UpdateBankBranchName(string Bankid, string name)
-        {
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == Bankid);
-            if (bank != null)
-            {
-                bank.BranchName = name;
-            }
-            else
-            {
-                throw new UserNotFoundException("Bank not found");
-            }
-        }
-
         public void UpdateAccountHolderName(string userid, string HolderName)
         {
             BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
             if (bankaccount != null)
             {
-                bankaccount.Name =HolderName;
+                bankaccount.Name = HolderName;
             }
             else
             {
@@ -156,9 +59,8 @@ namespace BankApplication.Services
             {
                 throw new UserNotFoundException("User not found");
             }
-
         }
-        
+
         public void DeleteAccountHolderAccount(string userid)
         {
             BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
@@ -188,6 +90,19 @@ namespace BankApplication.Services
                 receiverbankaccount.Transactions.Add(trans1);
 
             }
+        }
+
+        public string returnId(Bank bank, string HolderName)
+        {
+            string id = string.Empty;
+            foreach (var i in bank.BankAccounts)
+            {
+                if (i.Name == HolderName)
+                {
+                    id = i.Id;
+                }
+            }
+            return id;
         }
     }
 }

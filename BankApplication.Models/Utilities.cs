@@ -1,28 +1,52 @@
 ﻿using System;
-using System.Linq;
 
-namespace BankApplication.Models
+namespace BankApplication.Utilities
 {
-    public static class  Utilities
+    public static class Utilities
     {
-        public static  string GetStringInput(string helpText,bool isRequired)
+        public static string GetStringInput(string helpText, bool isRequired)
         {
             string input = string.Empty;
             try
-            {  
+            {
                 Console.Write(helpText);
                 input = Console.ReadLine();
-                if (string.IsNullOrEmpty(input) && isRequired)
+                if (isRequired && string.IsNullOrEmpty(input))
                 {
                     input = GetStringInput(helpText, isRequired);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                GetStringInput(helpText,isRequired);
+                GetStringInput(helpText, isRequired);
             }
-            
+
+            return input;
+        }
+
+        public static string GetPhoneNumber(string helpText, bool isRequired)
+        {
+            string input = string.Empty;
+            try
+            {
+                Console.Write(helpText);
+                input = Console.ReadLine();
+                if (input.Length != 10)
+                {
+                    throw new PhoneNumberNotValidException("Phone number is not valid");
+                }
+                if (isRequired && string.IsNullOrEmpty(input))
+                {
+                    input = GetStringInput(helpText, isRequired);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                GetStringInput(helpText, isRequired);
+            }
+
             return input;
         }
     }

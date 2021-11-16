@@ -5,19 +5,44 @@ namespace BankApplication.Models
 {
 	public class Bank
 	{
+		public Bank()
+        {
+			this.CurrencyCodes = new List<CurrencyCode>();
+
+			this.Branches = new List<Branch>();
+
+			this.Employees = new List<Employee>();
+
+			this.BankAccounts = new List<BankAccount>();
+		}
+
 		public string Id { get; set; }
-		public string BranchName { get; set; }
-		public string IFSCCode { get; set; }
-		public string BankName { get; set; }
-		public string CurrencyCode { get; set; }
-		public Admin Admin { get; set; }
-
-        public List<Employee> Employees = new List<Employee>();
-
-        public List<BankAccount> BankAccounts = new List<BankAccount>();
-
-
-
+		public string Name { get; set; }
+		public List<CurrencyCode> CurrencyCodes { get; set; }
+		public List<Branch> Branches { get; set; }
+        public List<Employee> Employees { get; set; }
+        public List<BankAccount> BankAccounts { get; set; }
 	}
 
+    public class CurrencyCode
+    {
+		public int Id { get; set; }
+
+		public string Code { get; set; }
+
+		public double ExchangeRate { get; set; }
+    }
+
+    public class Branch
+    {
+		public string Id { get; set; }
+
+		public string Name { get; set; }
+
+		public string IFSC { get; set; }
+
+		public string Address { get; set; }
+
+		public string IsMainBranch { get; set; }
+    }
 }
