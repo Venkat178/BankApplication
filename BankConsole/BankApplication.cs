@@ -193,7 +193,7 @@ namespace BankApplication
                                 {
                                     Admin loginadmin = bankservice.AdminLogin(loginuserid, adminpassword);
                                     Console.WriteLine("Login Successfully");
-                                    this.AccountMenu(loginadmin, loginuserid);
+                                    this.AccountMenu(loginadmin);
                                 }
                                 else
                                 {
@@ -209,7 +209,7 @@ namespace BankApplication
                                 {
                                     Employee loginemployee = bankservice.EmployeeLogin(loginuserid, employeepassword);
                                     Console.WriteLine("Login Successfully");
-                                    this.BankStaff(loginemployee,loginuserid);
+                                    this.BankStaff(loginemployee);
                                 }
                                 else
                                 {
@@ -225,7 +225,7 @@ namespace BankApplication
                                 {
                                     BankAccount loginuser = bankservice.Login(loginuserid, bankaccountpassword);
                                     Console.WriteLine("Login Successfully");
-                                    this.UserMenu(loginuser, loginuserid);
+                                    this.UserMenu(loginuser);
                                 }
                                 else
                                 {
@@ -262,7 +262,7 @@ namespace BankApplication
 
         
 
-        public void UserMenu(BankAccount bankaccount,string uid)
+        public void UserMenu(BankAccount bankaccount)
         {
             BankService bankservice = new BankService();
             bool menuflag = true;
@@ -330,7 +330,7 @@ namespace BankApplication
             
         }
 
-        public void BankStaff(Employee employee,string userid)
+        public void BankStaff(Employee employee)
         {
             EmployeeService employeeservice = new EmployeeService();
             bool employeemenuflag = true;
@@ -350,27 +350,32 @@ namespace BankApplication
                                 Console.WriteLine("The Account Holder Is  :  " + accountholderid);
                                 break;
                             case Employeemenu.UpdateAccountHolderName:
+                                string userid = Utilities.GetStringInput("Enter the userid  :  ", true);
                                 string name = Utilities.GetStringInput("Enter the Name to Update  :  ", true);
                                 employeeservice.UpdateAccountHolderName(userid, name);
                                 break;
                             case Employeemenu.UpdateAccountHolderPhoneNumber:
+                                string userid1 = Utilities.GetStringInput("Enter the userid  :  ", true);
                                 string phonenumber = Utilities.GetStringInput("Enter the Phone Number to Update  :  ", true);
-                                employeeservice.UpdateAccountHolderPhoneNumber(userid, phonenumber);
+                                employeeservice.UpdateAccountHolderPhoneNumber(userid1, phonenumber);
                                 break;
                             case Employeemenu.UpdateAccountHolderGender:
+                                string userid2 = Utilities.GetStringInput("Enter the userid  :  ", true);
                                 GenderType gender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.GetStringInput("Enter the Your Gender   :   ", true), true);
-                                employeeservice.UpdateAccountHolderGender(userid, gender);
+                                employeeservice.UpdateAccountHolderGender(userid2, gender);
                                 break;
                             case Employeemenu.UpdateAccountHolderAddress:
+                                string userid3 = Utilities.GetStringInput("Enter the userid  :  ", true);
                                 string address = Utilities.GetStringInput("Enter the Address to Update  :  ", true);
-                                employeeservice.UpdateAccountHolderAddress(userid, address);
+                                employeeservice.UpdateAccountHolderAddress(userid3, address);
                                 break;
                             case Employeemenu.RevertTransaction:
                                 string transid = Utilities.GetStringInput("Enter the TransactionID  :  ", true);
                                 employeeservice.revertTransaction(transid);
                                 break;
                             case Employeemenu.DeleteAccountHolderAccount:
-                                employeeservice.DeleteAccountHolderAccount(userid);
+                                string userid4 = Utilities.GetStringInput("Enter the userid  :  ", true);
+                                employeeservice.DeleteAccountHolderAccount(userid4);
                                 break;
                             case Employeemenu.Exit:
                                 employee = null;
@@ -394,7 +399,7 @@ namespace BankApplication
         }
 
 
-        public void AccountMenu(Admin admin,string userid)
+        public void AccountMenu(Admin admin)
         {
             AccountService accountservice = new AccountService();
             try
@@ -415,46 +420,56 @@ namespace BankApplication
                                 Console.WriteLine("The Employee Id is  :  " + employeeid);
                                 break;
                             case Accountmenu.UpdateEmployeeName:
+                                string employeeid1 = Utilities.GetStringInput("Enter the employeeid  :  ", true);
                                 string employeename = Utilities.GetStringInput("Enter the Name to Update  :  ", true);
-                                accountservice.UpdateEmployeeName(userid, employeename);
+                                accountservice.UpdateEmployeeName(employeeid1, employeename);
                                 break;
                             case Accountmenu.UpdateEmployeePhoneNumber:
+                                string employeeid2 = Utilities.GetStringInput("Enter the employeeid  :  ", true);
                                 string employeephonenumber = Utilities.GetStringInput("Enter the Phone Number to Update  :  ", true);
-                                accountservice.UpdateEmployeeName(userid, employeephonenumber);
+                                accountservice.UpdateEmployeeName(employeeid2, employeephonenumber);
                                 break;
                             case Accountmenu.UpdateEmployeeGender:
+                                string employeeid3 = Utilities.GetStringInput("Enter the employeeid  :  ", true);
                                 GenderType employeegender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.GetStringInput("Enter the Your Gender   :   ", true), true);
-                                accountservice.UpdateEmployeeGender(userid, employeegender);
+                                accountservice.UpdateEmployeeGender(employeeid3, employeegender);
                                 break;
                             case Accountmenu.UpdateEmployeeAddress:
+                                string employeeid4 = Utilities.GetStringInput("Enter the employeeid  :  ", true);
                                 string employeeaddress = Utilities.GetStringInput("Enter the Address to Update  :  ", true);
-                                accountservice.UpdateEmployeeAddress(userid, employeeaddress);
+                                accountservice.UpdateEmployeeAddress(employeeid4, employeeaddress);
                                 break;
                             case Accountmenu.DeleteEmployeeAccount:
-                                accountservice.DeleteEmployeeAccount(userid);
+                                string employeeid5 = Utilities.GetStringInput("Enter the employeeid  :  ", true);
+                                accountservice.DeleteEmployeeAccount(employeeid5);
                                 break;
                             case Accountmenu.AccountHolderRegistration:
                                 string accountholderid = this.AccountHolderRegistration();
                                 Console.WriteLine("The Account Holder Is  :  " + accountholderid);
                                 break;
                             case Accountmenu.UpdateAccountHolderName:
+                                string userid = Utilities.GetStringInput("Enter the userid  :  ", true);
                                 string name = Utilities.GetStringInput("Enter the Name to Update  :  ", true);
                                 accountservice.UpdateAccountHolderName(userid, name);
                                 break;
                             case Accountmenu.UpdateAccountHolderPhoneNumber:
+                                string userid1 = Utilities.GetStringInput("Enter the userid  :  ", true);
                                 string phonenumber = Utilities.GetStringInput("Enter the Phone Number to Update  :  ", true);
-                                accountservice.UpdateAccountHolderPhoneNumber(userid, phonenumber);
+                                accountservice.UpdateAccountHolderPhoneNumber(userid1, phonenumber);
                                 break;
                             case Accountmenu.UpdateAccountHolderGender:
+                                string userid2 = Utilities.GetStringInput("Enter the userid  :  ", true);
                                 GenderType gender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.GetStringInput("Enter the Your Gender   :   ", true), true);
-                                accountservice.UpdateAccountHolderGender(userid, gender);
+                                accountservice.UpdateAccountHolderGender(userid2, gender);
                                 break;
                             case Accountmenu.UpdateAccountHolderAddress:
+                                string userid3 = Utilities.GetStringInput("Enter the userid  :  ", true);
                                 string address = Utilities.GetStringInput("Enter the Address to Update  :  ", true);
-                                accountservice.UpdateAccountHolderAddress(userid, address);
+                                accountservice.UpdateAccountHolderAddress(userid3, address);
                                 break;
                             case Accountmenu.DeleteAccountHolderAccount:
-                                accountservice.DeleteAccountHolderAccount(userid);
+                                string userid4 = Utilities.GetStringInput("Enter the userid  :  ", true);
+                                accountservice.DeleteAccountHolderAccount(userid4);
                                 break;
                             case Accountmenu.RevertTransaction:
                                 string transid = Utilities.GetStringInput("Enter the TransactionID  :  ", true);

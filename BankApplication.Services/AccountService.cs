@@ -16,6 +16,10 @@ namespace BankApplication.Services
             {
                 employee.Name = EmployeeName;
             }
+            else
+            {
+                throw new UserNotFoundException("Employee not found");
+            }
         }
 
         public void UpdateEmployeePhoneNumber(string userid, string phonenumber)
@@ -24,6 +28,10 @@ namespace BankApplication.Services
             if (employee != null)
             {
                 employee.PhoneNumber = phonenumber;
+            }
+            else
+            {
+                throw new UserNotFoundException("Employee not found");
             }
         }
 
@@ -34,6 +42,10 @@ namespace BankApplication.Services
             {
                 employee.Gender = gender;
             }
+            else
+            {
+                throw new UserNotFoundException("Employee not found");
+            }
         }
 
         public void UpdateEmployeeAddress(string userid, string address)
@@ -42,6 +54,10 @@ namespace BankApplication.Services
             if (employee != null)
             {
                 employee.Address = address;
+            }
+            else
+            {
+                throw new UserNotFoundException("Employee not found");
             }
         }
 
@@ -52,6 +68,10 @@ namespace BankApplication.Services
             {
                 BankDatabase.Employees.Remove(employee);
             }
+            else
+            {
+                throw new UserNotFoundException("Employee not found");
+            }
         }
 
         public void UpdateBankName(string Bankid,string name)
@@ -60,6 +80,10 @@ namespace BankApplication.Services
             if(bank!=null)
             {
                 bank.BankName = name;
+            }
+            else
+            {
+                throw new UserNotFoundException("Bank not found");
             }
         }
 
@@ -70,6 +94,10 @@ namespace BankApplication.Services
             {
                 bank.BranchName = name;
             }
+            else
+            {
+                throw new UserNotFoundException("Bank not found");
+            }
         }
 
         public void UpdateAccountHolderName(string userid, string HolderName)
@@ -78,6 +106,10 @@ namespace BankApplication.Services
             if (bankaccount != null)
             {
                 bankaccount.Name =HolderName;
+            }
+            else
+            {
+                throw new UserNotFoundException("User not found");
             }
         }
 
@@ -88,6 +120,10 @@ namespace BankApplication.Services
             {
                 bankaccount.PhoneNumber = phonenumber;
             }
+            else
+            {
+                throw new UserNotFoundException("User not found");
+            }
         }
 
         public void UpdateAccountHolderGender(string userid, GenderType gender)
@@ -96,6 +132,10 @@ namespace BankApplication.Services
             if (bankaccount != null)
             {
                 bankaccount.Gender = gender;
+            }
+            else
+            {
+                throw new UserNotFoundException("User not found");
             }
         }
 
@@ -106,6 +146,10 @@ namespace BankApplication.Services
             {
                 bankaccount.Address = address;
             }
+            else
+            {
+                throw new UserNotFoundException("User not found");
+            }
 
         }
         
@@ -115,6 +159,10 @@ namespace BankApplication.Services
             if (bankaccount != null)
             {
                 BankDatabase.BankAccounts.Remove(bankaccount);
+            }
+            else
+            {
+                throw new UserNotFoundException("User not found");
             }
         }
 

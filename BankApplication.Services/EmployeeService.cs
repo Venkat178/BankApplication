@@ -16,6 +16,10 @@ namespace BankApplication.Services
             {
                 bankaccount.Name = HolderName;
             }
+            else
+            {
+                throw new UserNotFoundException("User not found");
+            }
         }
 
         public void UpdateAccountHolderPhoneNumber(string userid, string phonenumber)
@@ -24,6 +28,10 @@ namespace BankApplication.Services
             if (bankaccount != null)
             {
                 bankaccount.PhoneNumber = phonenumber;
+            }
+            else
+            {
+                throw new UserNotFoundException("User not found");
             }
         }
 
@@ -34,6 +42,10 @@ namespace BankApplication.Services
             {
                 bankaccount.Gender = gender;
             }
+            else
+            {
+                throw new UserNotFoundException("User not found");
+            }
         }
 
         public void UpdateAccountHolderAddress(string userid, string address)
@@ -43,6 +55,10 @@ namespace BankApplication.Services
             {
                 bankaccount.Address = address;
             }
+            else
+            {
+                throw new UserNotFoundException("User not found");
+            }
         }
 
         public void DeleteAccountHolderAccount(string userid)
@@ -51,6 +67,10 @@ namespace BankApplication.Services
             if (bankaccount != null)
             {
                 BankDatabase.BankAccounts.Remove(bankaccount);
+            }
+            else
+            {
+                throw new UserNotFoundException("User not found");
             }
         }
 

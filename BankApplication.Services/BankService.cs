@@ -77,24 +77,17 @@ namespace BankApplication.Services
         public string Withdraw (BankAccount bankaccount, double amt)
         {
             string txnid = "TXN";
-            try
+            if (bankaccount.Balance >= amt)
             {
-                if (bankaccount.Balance >= amt)
-                {
-                    bankaccount.Balance -= amt;
-                    Transaction trans = new Transaction(bankaccount.Id, bankaccount.Id, amt, bankaccount.BankId, TransactionType.Debited);
-                    bankaccount.Transactions.Add(trans);
-                    txnid = trans.Id;
-                }
-                else
-                {
-                    throw new OutofMoneyException("You do not have sufficient money");
-                }
+                bankaccount.Balance -= amt;
+                Transaction trans = new Transaction(bankaccount.Id, bankaccount.Id, amt, bankaccount.BankId, TransactionType.Debited);
+                bankaccount.Transactions.Add(trans);
+                txnid = trans.Id;
             }
-            catch(Exception ex)
+            else
             {
-                Console.WriteLine(ex.Message);
-            } 
+                throw new OutofMoneyException("You do not have sufficient money");
+            }
             return txnid;
         }
 
@@ -115,7 +108,7 @@ namespace BankApplication.Services
             }
             else
             {
-                Console.WriteLine("Insufficient Amount to Transfer");
+                throw new OutofMoneyException("You do not have sufficient money");
             }
             return txnid;
         }
