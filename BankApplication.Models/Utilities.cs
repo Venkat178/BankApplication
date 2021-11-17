@@ -34,7 +34,7 @@ namespace BankApplication.Utilities
                 input = Console.ReadLine();
                 if (input.Length != 10)
                 {
-                    throw new PhoneNumberNotValidException("Phone number is not valid");
+                    //throw new PhoneNumberNotValidException("Phone number is not valid");
                 }
                 if (isRequired && string.IsNullOrEmpty(input))
                 {

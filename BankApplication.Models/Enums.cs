@@ -1,5 +1,4 @@
-﻿
-namespace BankApplication.Models
+﻿namespace BankApplication.Models
 {
     public enum Mainmenu
     {
@@ -15,14 +14,13 @@ namespace BankApplication.Models
         Transfer,
         ViewBalance,
         ViewTransactions,
-        Logout,
         Exit
     }
 
     public enum EmployeeMenu
     {
         CreateAccountHolder = 1,
-        UpdateAccountHolder,
+        UpdateAccountHolderDetails,
         DeleteAccountHolder,
         Deposit,
         Withdraw,
@@ -36,11 +34,11 @@ namespace BankApplication.Models
 
     public enum AdminMenu
     {
-        EmployeeRegistration=1,  
-        UpdateEmployee,
+        CreateEmployee=1,  
+        UpdateEmployeeDetails,
         DeleteEmployee,
         CreateAccountHolder,
-        UpdateAccountHolder,
+        UpdateAccountHolderDetails,
         DeleteAccountHolder,
         Deposit,
         Withdraw,

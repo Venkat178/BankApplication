@@ -1,193 +1,56 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using BankApplication.Models;
-using System.Text;
-using System.Threading.Tasks;
+using System.Linq;
 
 namespace BankApplication.Services
 {
     public class AccountService
     {
-        Login,
-        Register,
-        ForgotPassword,
-        ResetPassword
-
-
-        public void UpdateEmployeeName(string userid, string EmployeeName)
+        public Employee AdminLogin(string employeeid, string password)
         {
-            Employee employee= BankDatabase.Employees.Find(employee => employee.Id == userid);
-            if (employee!=null)
+            Employee user = null;
+            Bank bank = BankDatabase.Banks.Find(b => b.Admins.Any(employee=> employee.Id == employeeid));
+            Employee admin = bank != null ? bank.Admins.Find(employee => employee.Id == employeeid) : null;
+            if (admin != null)
             {
-                employee.Name = EmployeeName;
+                user = admin;
             }
-            else
-            {
-                throw new UserNotFoundException("Employee not found");
-            }
+            return user;
         }
 
-        public void UpdateEmployeePhoneNumber(string userid, string phonenumber)
+        public Employee EmployeeLogin(string employeeid, string password)
         {
-            Employee employee = BankDatabase.Employees.Find(employee => employee.Id == userid);
+            Employee user = null;
+            Bank bank = BankDatabase.Banks.Find(b => b.Employees.Any(employee => employee.Id == employeeid));
+            Employee employee = bank != null ? bank.Employees.Find(employee => employee.Id == employeeid) : null;
             if (employee != null)
             {
-                employee.PhoneNumber = phonenumber;
+                user = employee;
             }
-            else
-            {
-                throw new UserNotFoundException("Employee not found");
-            }
+            return user;
         }
 
-        public void UpdateEmployeeGender(string userid, GenderType gender)
+        public BankAccount Login(string userid, string password)
         {
-            Employee employee = BankDatabase.Employees.Find(employee => employee.Id == userid);
-            if (employee != null)
-            {
-                employee.Gender = gender;
-            }
-            else
-            {
-                throw new UserNotFoundException("Employee not found");
-            }
-        }
-
-        public void UpdateEmployeeAddress(string userid, string address)
-        {
-            Employee employee = BankDatabase.Employees.Find(employee => employee.Id == userid);
-            if (employee != null)
-            {
-                employee.Address = address;
-            }
-            else
-            {
-                throw new UserNotFoundException("Employee not found");
-            }
-        }
-
-        public void DeleteEmployeeAccount(string userid)
-        {
-            Employee employee = BankDatabase.Employees.Find(employee => employee.Id == userid);
-            if (employee != null)
-            {
-                BankDatabase.Employees.Remove(employee);
-            }
-            else
-            {
-                throw new UserNotFoundException("Employee not found");
-            }
-        }
-
-        public void UpdateBankName(string Bankid,string name)
-        {
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == Bankid);
-            if(bank!=null)
-            {
-                bank.BankName = name;
-            }
-            else
-            {
-                throw new UserNotFoundException("Bank not found");
-            }
-        }
-
-        public void UpdateBankBranchName(string Bankid, string name)
-        {
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == Bankid);
-            if (bank != null)
-            {
-                bank.BranchName = name;
-            }
-            else
-            {
-                throw new UserNotFoundException("Bank not found");
-            }
-        }
-
-        public void UpdateAccountHolderName(string userid, string HolderName)
-        {
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
+            BankAccount user = null;
+            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid && bankaccount.Password == password);
             if (bankaccount != null)
             {
-                bankaccount.Name =HolderName;
+                user = bankaccount;
             }
-            else
-            {
-                throw new UserNotFoundException("User not found");
-            }
+            return user;
         }
 
-        public void UpdateAccountHolderPhoneNumber(string userid, string phonenumber)
+        public string ResetPassword(string userid)
         {
             BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
-            if (bankaccount != null)
+            string password = Utilities.Utilities.GetStringInput("Enter the new password  :  ", true);
+            while (password != Utilities.Utilities.GetStringInput("Re-Enter the password  :  ", true))
             {
-                bankaccount.PhoneNumber = phonenumber;
+                Console.WriteLine("Password does not matched! Please try Again");
             }
-            else
-            {
-                throw new UserNotFoundException("User not found");
-            }
-        }
-
-        public void UpdateAccountHolderGender(string userid, GenderType gender)
-        {
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
-            if (bankaccount != null)
-            {
-                bankaccount.Gender = gender;
-            }
-            else
-            {
-                throw new UserNotFoundException("User not found");
-            }
-        }
-
-        public void UpdateAccountHolderAddress(string userid, string address)
-        {
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
-            if (bankaccount != null)
-            {
-                bankaccount.Address = address;
-            }
-            else
-            {
-                throw new UserNotFoundException("User not found");
-            }
-
-        }
-        
-        public void DeleteAccountHolderAccount(string userid)
-        {
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
-            if (bankaccount != null)
-            {
-                BankDatabase.BankAccounts.Remove(bankaccount);
-            }
-            else
-            {
-                throw new UserNotFoundException("User not found");
-            }
-        }
-
-        public void revertTransaction(string transId)
-        {
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(b => b.Transactions.Any(transaction => transaction.Id == transId));
-            Transaction transaction = bankaccount != null ? bankaccount.Transactions.Find(transaction => transaction.Id == transId) : null;
-            if (transaction != null)
-            {
-                BankAccount senderbankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == transaction.SenderAccountId);
-                BankAccount receiverbankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == transaction.RecieverAccountId);
-                senderbankaccount.Balance += transaction.Amount;
-                receiverbankaccount.Balance -= transaction.Amount;
-                Transaction trans = new Transaction(transaction.SenderAccountId, transaction.RecieverAccountId, transaction.Amount, senderbankaccount.BankId, TransactionType.Debited);
-                Transaction trans1 = new Transaction(transaction.SenderAccountId, transaction.RecieverAccountId, transaction.Amount, senderbankaccount.BankId, TransactionType.Credited);
-                senderbankaccount.Transactions.Add(trans);
-                receiverbankaccount.Transactions.Add(trans1);
-
-            }
+            bankaccount.Password = password;
+            return bankaccount.Password;
         }
     }
 }

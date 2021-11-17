@@ -7,22 +7,27 @@ namespace BankApplication.Services
 {
     public class BankService
     {
-        public Status SetUpBank(Bank bank, Employee admin)
+        public Status SetUpBank(Branch branch,Bank bank, Employee admin)
         {
             Status status = new Status();
             try
             {
+
                 bank.Id = bank.Name + DateTime.Now.ToString("yyyyMMddHHmmss");
                 bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "INR", ExchangeRate = 1 });
 
+                branch.Id = branch.Name + DateTime.Now.ToString("yyyyMMddHHmmss");
+                branch.IsMainBranch = true;
+
                 admin.Id = bank.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
                 admin.Role = "Admin";
-                bank.Employees.Add(admin);
+                bank.Admins.Add(admin);
 
                 BankDatabase.Banks.Add(bank);
+                bank.Branches.Add(branch);
                 status.IsSuccess = true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 status.IsSuccess = false;
                 status.Message = "Unable to create a bank...!";
@@ -31,112 +36,94 @@ namespace BankApplication.Services
             return status;
         }
 
-        public void Deposit()
-        {
-
-        }
-
-        public void WithDraw()
-        {
-
-        }
-
-        public void Transfer()
-        {
-
-        }
-
         public string Register(Bank bank, BankAccount bankaccount)
         {
             if (BankDatabase.BankAccounts.Count != 0 && BankDatabase.BankAccounts.Any(p => p.Name == bankaccount.Name) == true)
             {
                 throw new Exception("Account already exists!");
             }
+            bankaccount.Id = bankaccount.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
             bankaccount.Type = UserType.AccountHolder;
             bank.BankAccounts.Add(bankaccount);
             BankDatabase.BankAccounts.Add(bankaccount);
             return bankaccount.Id;
         }
 
-        public Admin AdminLogin(string userid, string password)
+        public string EmployeeRegister(Employee employee,Bank bank)
         {
-            Admin user = null;
-            Admin admin = BankDatabase.Admins.Find(admin => admin.Id == userid && admin.Password == password);
-            if (admin != null)
-            {
-                user = admin;
-            }
-            return user;
+            employee.Type = UserType.Employee;
+            employee.Id = employee.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
+            bank.Employees.Add(employee);
+            return employee.Id;
         }
-
-        public BankAccount Login(string userid, string password)
-        {
-            BankAccount user = null;
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid && bankaccount.Password == password);
-            if (bankaccount != null)
-            {
-                user = bankaccount;
-            }
-            return user;
-        }
-
-        public Employee EmployeeLogin(string userid, string password)
-        {
-            Employee user = null;
-            Employee employee = BankDatabase.Employees.Find(employee => employee.Id == userid && employee.Password == password);
-            if (employee != null)
-            {
-                user = employee;
-            }
-            return user;
-        }
-
-
         public string Deposit(BankAccount bankaccount, double amt)
         {
             string txnid = "TXN";
+            Transaction transaction = new Transaction();
             bankaccount.Balance += amt;
-            Transaction trans = new Transaction(bankaccount.Id, bankaccount.Id, amt, bankaccount.BankId, TransactionType.Credited);
-            bankaccount.Transactions.Add(trans);
-            txnid = trans.Id;
+            transaction.SrcAccId = bankaccount.Id;
+            transaction.DestAccId = bankaccount.Id;
+            transaction.Amount = amt;
+            transaction.CreatedBy = bankaccount.Id;
+            transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
+            transaction.Id = "TXN" + bankaccount.Id + bankaccount.Id + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
+            transaction.Type = TransactionType.Credit;
+            bankaccount.Transactions.Add(transaction);
+            txnid = transaction.Id;
             return txnid;
         }
 
         public string Withdraw(BankAccount bankaccount, double amt)
         {
             string txnid = "TXN";
+            Transaction transaction = new Transaction();
             if (bankaccount.Balance >= amt)
             {
                 bankaccount.Balance -= amt;
-                Transaction trans = new Transaction(bankaccount.Id, bankaccount.Id, amt, bankaccount.BankId, TransactionType.Debited);
-                bankaccount.Transactions.Add(trans);
-                txnid = trans.Id;
+                transaction.SrcAccId = bankaccount.Id;
+                transaction.DestAccId = bankaccount.Id;
+                transaction.Amount = amt;
+                transaction.CreatedBy = bankaccount.Id;
+                transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
+                transaction.Id = "TXN" + bankaccount.Id + bankaccount.Id + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
+                transaction.Type = TransactionType.Debit;
+                bankaccount.Transactions.Add(transaction);
+                txnid = transaction.Id;
             }
             else
             {
-                throw new OutofMoneyException("You do not have sufficient money");
+                Console.WriteLine("You do not have sufficient money");
             }
             return txnid;
         }
 
 
-        public string Transfer(BankAccount bankaccount, string recuserId, double amt)
+        public string Transfer(BankAccount bankaccount, string destuserId, double amt)
         {
             string txnid = "TXN";
-            BankAccount recevierbankaccount = BankDatabase.BankAccounts.Find(bankacount => bankaccount.Id == recuserId);
-            if (bankaccount.Balance >= amt)
+            Transaction transaction = new Transaction();
+            BankAccount recevierbankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == destuserId);
+            if(recevierbankaccount!=null)
             {
-                bankaccount.Balance -= amt;
-                recevierbankaccount.Balance += amt;
-                Transaction trans = new Transaction(bankaccount.Id, recuserId, amt, bankaccount.BankId, TransactionType.Debited);
-                Transaction trans1 = new Transaction(bankaccount.Id, recuserId, amt, bankaccount.BankId, TransactionType.Credited);
-                bankaccount.Transactions.Add(trans);
-                recevierbankaccount.Transactions.Add(trans1);
-                txnid = trans.Id;
-            }
-            else
-            {
-                throw new OutofMoneyException("You do not have sufficient money");
+                if (bankaccount.Balance >= amt)
+                {
+                    bankaccount.Balance -= amt;
+                    recevierbankaccount.Balance += amt;
+                    transaction.SrcAccId = bankaccount.Id;
+                    transaction.DestAccId = destuserId;
+                    transaction.Amount = amt;
+                    transaction.CreatedBy = bankaccount.Id;
+                    transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
+                    transaction.Id = "TXN" + bankaccount.Id + destuserId + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
+                    transaction.Type = TransactionType.Transfer;
+                    bankaccount.Transactions.Add(transaction);
+                    recevierbankaccount.Transactions.Add(transaction);
+                    txnid = transaction.Id;
+                }
+                else
+                {
+                    Console.WriteLine("You do not have sufficient money");
+                }
             }
             return txnid;
         }
@@ -146,27 +133,31 @@ namespace BankApplication.Services
             return bankaccount.Balance;
         }
 
-        public void ViewTransactions(BankAccount bankaccount)
+        public void ViewAllBankBranches(string Bankid)
         {
-            foreach (var i in bankaccount.Transactions)
+            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == Bankid);
+            foreach(var i in bank.Branches)
             {
-                Console.WriteLine(i.SenderAccountId + " to " + i.RecieverAccountId + " of " + i.Amount);
+                Console.WriteLine(i.Id + "  -  " + i.Name);
             }
         }
 
-        /*public void logout()
+        public void ViewAllAccounts()
         {
-            BankAccount b = null;
-        }*/
-
-        public void ViewAllBankBranches()
-        {
-            foreach (var i in BankDatabase.Banks)
+            foreach(var i in BankDatabase.BankAccounts)
             {
-                Console.WriteLine(i.BranchName);
+                Console.WriteLine(i.Id + "   -   " + i.Name+"   -   "+i.PhoneNumber+"   -   "+i.Address);
             }
         }
 
+        public void ViewAllEmployees(string bankid)
+        {
+            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
+            foreach(var i in bank.Employees)
+            {
+                Console.WriteLine(i.Id + "   -   " + i.Name + "   -   " + i.PhoneNumber + "   -   " + i.Address);
+            }
+        }
     }
 }
 

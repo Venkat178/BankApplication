@@ -1,49 +1,18 @@
 ﻿using System;
+using BankApplication.Models;
 using System.Collections.Generic;
 using System.Linq;
-using BankApplication.Models;
 
 namespace BankApplication.Services
 {
-    public class EmployeeService
+    public class AccountHolderService
     {
-        public void UpdateEmployeeDetails(Employee employee, string employeeid)
-        {
-            Bank bank = BankDatabase.Banks.Find(b => b.Employees.Any(employee => employee.Id == employeeid));
-            var oldemployee = bank != null ? bank.Employees.Find(employee => employee.Id == employeeid) : null;
-            if(oldemployee!=null)
-            {
-                oldemployee.Name = employee.Name == "no" ? oldemployee.Name : employee.Name;
-                oldemployee.PhoneNumber = employee.PhoneNumber == "no" ? oldemployee.PhoneNumber : employee.PhoneNumber;
-                oldemployee.Address = employee.Address == "no" ? oldemployee.Address : employee.Address;
-            } 
-        }
-
-        public void DeleteEmployee(string employeeid)
-        {
-            Bank bank = BankDatabase.Banks.Find(b => b.Employees.Any(employee => employee.Id == employeeid));
-            Employee employee = bank != null ? bank.Employees.Find(employee => employee.Id == employeeid) : null;
-            if (employee != null)
-            {
-                bank.Employees.Remove(employee);
-            }
-            else
-            {
-                Console.WriteLine("Employee not found");
-            }
-
-        }
-
         public void UpdateAccountHolderDetails(BankAccount bankaccount,string userid)
         {
             BankAccount oldbankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
-            if (oldbankaccount != null)
-            {
-                oldbankaccount.Name = bankaccount.Name == "no" ? oldbankaccount.Name : bankaccount.Name;
-                oldbankaccount.PhoneNumber = bankaccount.PhoneNumber == "no" ? oldbankaccount.PhoneNumber : bankaccount.PhoneNumber;
-                oldbankaccount.Address = bankaccount.Address == "no" ? oldbankaccount.Address : bankaccount.Address;
-            }
-            
+            oldbankaccount.Name = bankaccount.Name == "no" ? oldbankaccount.Name : bankaccount.Name;
+            oldbankaccount.PhoneNumber = bankaccount.PhoneNumber == "no" ? oldbankaccount.PhoneNumber : bankaccount.PhoneNumber;
+            oldbankaccount.Address = bankaccount.Address == "no" ? oldbankaccount.Address : bankaccount.Address;
         }
 
         public void DeleteAccountHolderAccount(string userid)
@@ -98,7 +67,7 @@ namespace BankApplication.Services
             return txnid;
         }
 
-        public string Transfer(string srcId, string destuserId, double amt)
+        public string Transfer(string srcId,string destuserId,double amt)
         {
             BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == srcId);
             string txnid = "TXN";
@@ -130,7 +99,7 @@ namespace BankApplication.Services
         public void ViewTransactions(string userid)
         {
             BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
-            foreach (var i in bankaccount.Transactions)
+            foreach(var i in bankaccount.Transactions)
             {
                 Console.WriteLine(i.SrcAccId + " to " + i.DestAccId + " of " + i.Amount);
             }
@@ -152,26 +121,14 @@ namespace BankApplication.Services
             }
         }
 
-        public void AddBranch(Branch branch,Bank bank)
-        {
-            branch.Id = bank.Name+ DateTime.Now.ToString("yyyyMMddHHmmss");
-            bank.Branches.Add(branch);
-        }
-
-        public void DeleteBranch(string Branchid)
-        {
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Branches.Any(branch => branch.Id == Branchid));
-            Branch branch = bank != null ? bank.Branches.Find(branch => branch.Id == Branchid):null;
-
-            if(branch!=null)
-            {
-                bank.Branches.Remove(branch);
-            }
-        }
-
         public void AddCurrency(string currencyCode, double exchangeRate,Bank bank)
         {
             bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "currencyCode", ExchangeRate = exchangeRate });
+        }
+
+        public void UpdateCharges()
+        {
+
         }
     }
 }
