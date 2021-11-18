@@ -71,4 +71,10 @@
         Employee,
         Admin
     }
+
+    public enum Charges
+    {
+        IMPS,
+        RTGS
+    }
 }

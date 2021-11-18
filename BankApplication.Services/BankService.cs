@@ -1,6 +1,5 @@
 ﻿using System;
 using BankApplication.Models;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace BankApplication.Services
@@ -15,6 +14,10 @@ namespace BankApplication.Services
 
                 bank.Id = bank.Name + DateTime.Now.ToString("yyyyMMddHHmmss");
                 bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "INR", ExchangeRate = 1 });
+                bank.IMPSChargesforSameBank = 5;
+                bank.RTGSChargesforSameBank = 0;
+                bank.IMPSChargesforDifferentBank = 6;
+                bank.RTGSChargesforDifferentBank = 2;
 
                 branch.Id = branch.Name + DateTime.Now.ToString("yyyyMMddHHmmss");
                 branch.IsMainBranch = true;
@@ -98,31 +101,108 @@ namespace BankApplication.Services
         }
 
 
-        public string Transfer(BankAccount bankaccount, string destuserId, double amt)
+        public string Transfer(BankAccount bankaccount,string destuserId, double amt,Charges charge)
         {
             string txnid = "TXN";
             Transaction transaction = new Transaction();
             BankAccount recevierbankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == destuserId);
-            if(recevierbankaccount!=null)
+            if(recevierbankaccount != null)
             {
-                if (bankaccount.Balance >= amt)
+                if (bankaccount.BankId == recevierbankaccount.BankId)
                 {
-                    bankaccount.Balance -= amt;
-                    recevierbankaccount.Balance += amt;
-                    transaction.SrcAccId = bankaccount.Id;
-                    transaction.DestAccId = destuserId;
-                    transaction.Amount = amt;
-                    transaction.CreatedBy = bankaccount.Id;
-                    transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
-                    transaction.Id = "TXN" + bankaccount.Id + destuserId + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
-                    transaction.Type = TransactionType.Transfer;
-                    bankaccount.Transactions.Add(transaction);
-                    recevierbankaccount.Transactions.Add(transaction);
-                    txnid = transaction.Id;
+                    if (charge == Charges.RTGS)
+                    {
+                        if (bankaccount.Balance >= amt)
+                        {
+                            bankaccount.Balance -= amt;
+                            recevierbankaccount.Balance += amt;
+                            transaction.SrcAccId = bankaccount.Id;
+                            transaction.DestAccId = destuserId;
+                            transaction.Amount = amt;
+                            transaction.CreatedBy = bankaccount.Id;
+                            transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
+                            transaction.Id = "TXN" + bankaccount.Id + destuserId + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
+                            transaction.Type = TransactionType.Transfer;
+                            bankaccount.Transactions.Add(transaction);
+                            recevierbankaccount.Transactions.Add(transaction);
+                            txnid = transaction.Id;
+                        }
+                        else
+                        {
+                            Console.WriteLine("You do not have sufficient money");
+                        }
+                    }
+                    else
+                    {
+                        if (bankaccount.Balance >= amt + (0.05 * amt))
+                        {
+                            bankaccount.Balance -= (amt + (0.05 * amt));
+                            recevierbankaccount.Balance += amt;
+                            transaction.SrcAccId = bankaccount.Id;
+                            transaction.DestAccId = destuserId;
+                            transaction.Amount = amt;
+                            transaction.CreatedBy = bankaccount.Id;
+                            transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
+                            transaction.Id = "TXN" + bankaccount.Id + destuserId + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
+                            transaction.Type = TransactionType.Transfer;
+                            bankaccount.Transactions.Add(transaction);
+                            recevierbankaccount.Transactions.Add(transaction);
+                            txnid = transaction.Id;
+                        }
+                        else
+                        {
+                            Console.WriteLine("You do not have sufficient money");
+                        }
+                        
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("You do not have sufficient money");
+                    if (charge == Charges.RTGS)
+                    {
+                        if (bankaccount.Balance >= amt + (0.02 * amt))
+                        {
+                            bankaccount.Balance -= (amt + (0.02 * amt));
+                            recevierbankaccount.Balance += amt;
+                            transaction.SrcAccId = bankaccount.Id;
+                            transaction.DestAccId = destuserId;
+                            transaction.Amount = amt;
+                            transaction.CreatedBy = bankaccount.Id;
+                            transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
+                            transaction.Id = "TXN" + bankaccount.Id + destuserId + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
+                            transaction.Type = TransactionType.Transfer;
+                            bankaccount.Transactions.Add(transaction);
+                            recevierbankaccount.Transactions.Add(transaction);
+                            txnid = transaction.Id;
+                        }
+                        else
+                        {
+                            Console.WriteLine("You do not have sufficient money");
+                        }
+                    }
+                    else
+                    {
+                        if (bankaccount.Balance >= amt + (0.06 * amt))
+                        {
+                            bankaccount.Balance -= (amt + (0.06 * amt));
+                            recevierbankaccount.Balance += amt;
+                            transaction.SrcAccId = bankaccount.Id;
+                            transaction.DestAccId = destuserId;
+                            transaction.Amount = amt;
+                            transaction.CreatedBy = bankaccount.Id;
+                            transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
+                            transaction.Id = "TXN" + bankaccount.Id + destuserId + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
+                            transaction.Type = TransactionType.Transfer;
+                            bankaccount.Transactions.Add(transaction);
+                            recevierbankaccount.Transactions.Add(transaction);
+                            txnid = transaction.Id;
+                        }
+                        else
+                        {
+                            Console.WriteLine("You do not have sufficient money");
+                        }
+                        
+                    }
                 }
             }
             return txnid;

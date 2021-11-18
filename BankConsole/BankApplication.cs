@@ -237,19 +237,20 @@ namespace BankApplication
                     {
                         case AccountHolderMenu.Deposit:
                             double amt = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the Amount to Deposit  :  ", true));
-                            bankservice.Deposit(bankaccount, amt);
+                            string transid = bankservice.Deposit(bankaccount, amt);
+                            Console.WriteLine("Transaction Id is  :  " + transid);
                             break;
                         case AccountHolderMenu.Withdraw:
-                            Console.Write("Enter the Amount  :  ");
-                            double amt1 = Convert.ToDouble(Console.ReadLine());
-                            bankservice.Withdraw(bankaccount, amt1);
+                            double amt1 = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount  :  ", true));
+                            string transid1= bankservice.Withdraw(bankaccount, amt1);
+                            Console.WriteLine("Transaction Id is  :  " + transid1);
                             break;
                         case AccountHolderMenu.Transfer:
-                            Console.Write("Enter the Reciever's BankId  :  ");
-                            string recuid = Console.ReadLine();
-                            Console.Write("Enter the Amount  :  ");
-                            double amt2 = Convert.ToDouble(Console.ReadLine());
-                            bankservice.Transfer(bankaccount, recuid, amt2);
+                            Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.Utilities.GetStringInput("What type of transfer you want IMPS/RTGS", true) , true);
+                            string destid = Utilities.Utilities.GetStringInput("Enter the Reciever's BankId  :  ", true);
+                            double amt2 = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the Amount  :  ", true));
+                            string transid2 = bankservice.Transfer(bankaccount, destid, amt2,charge);
+                            Console.WriteLine("Transaction Id is  :  " + transid2);
                             break;
                         case AccountHolderMenu.ViewBalance:
                             double balance = bankservice.ViewBalance(bankaccount);
@@ -319,11 +320,12 @@ namespace BankApplication
                                 Console.WriteLine("the transaction id is : " + transid1);
                                 break;
                             case EmployeeMenu.Transfer:
+                                Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.Utilities.GetStringInput("What type of transfer you want IMPS/RTGS", true), true);
                                 string srcid = Utilities.Utilities.GetStringInput("Enter the source user id  :  ", true);
                                 string destid = Utilities.Utilities.GetStringInput("Enter the destination user id  :  ", true);
                                 double amt2 = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount to transfer  :  ", true));
-                                string transid2 = accountholderservice.Transfer(srcid,destid, amt2);
-                                Console.WriteLine("the transaction id is : " + transid2);
+                                string transid2 = accountholderservice.Transfer(srcid,destid, amt2,charge);
+                                Console.WriteLine("The transaction id is : " + transid2);
                                 break;
                             case EmployeeMenu.RevertTransaction:
                                 string transid3 = Utilities.Utilities.GetStringInput("Enter the TransactionID  :  ", true);
@@ -425,10 +427,11 @@ namespace BankApplication
                             Console.WriteLine("the transaction id is : " + transid1);
                             break;
                         case AdminMenu.Transfer:
+                            Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.Utilities.GetStringInput("What type of transfer you want IMPS/RTGS", true), true);
                             string srcid = Utilities.Utilities.GetStringInput("Enter the source user id  :  ", true);
                             string destid = Utilities.Utilities.GetStringInput("Enter the destination user id  :  ", true);
                             double amt2 = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount to transfer  :  ", true));
-                            string transid2 = employeeservice.Transfer(srcid, destid, amt2);
+                            string transid2 = employeeservice.Transfer(srcid, destid, amt2,charge);
                             Console.WriteLine("the transaction id is : " + transid2);
                             break;
                         case AdminMenu.RevertTransaction:
