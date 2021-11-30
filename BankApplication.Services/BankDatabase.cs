@@ -4,13 +4,8 @@ using System.Collections.Generic;
 
 namespace BankApplication.Services
 {
-    public class BankDatabase
+    public static class BankDatabase
     {
-        public BankDatabase()
-        {
-            Banks = new List<Bank>();
-        }
-
-        public static List<Bank> Banks;
+        public static List<Bank> Banks = new List<Bank>();
     }
 }

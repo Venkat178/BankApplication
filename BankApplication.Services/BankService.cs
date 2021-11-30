@@ -9,15 +9,10 @@ namespace BankApplication.Services
         public Status SetUpBank(Branch branch,Bank bank, Employee admin)
         {
             Status status = new Status();
-            BankDatabase bankDatabase = new BankDatabase();
             try
             {
                 bank.Id = bank.Name + DateTime.Now.ToString("yyyyMMddHHmmss");
-                bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "INR", ExchangeRate = 1, IsDefault = true });
-                bank.IMPSChargesforSameBank = 5;
-                bank.RTGSChargesforSameBank = 0;
-                bank.IMPSChargesforDifferentBank = 6;
-                bank.RTGSChargesforDifferentBank = 2;
+                
 
                 branch.Id = branch.Name + DateTime.Now.ToString("yyyyMMddHHmmss");
                 branch.IsMainBranch = true;

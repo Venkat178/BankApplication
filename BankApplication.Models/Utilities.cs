@@ -16,7 +16,7 @@ namespace BankApplication.Utilities
                     input = GetStringInput(helpText, isRequired);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Console.WriteLine("Please provide valid input");
                 GetStringInput(helpText, isRequired);
@@ -26,7 +26,7 @@ namespace BankApplication.Utilities
 
         public static long GetPhoneNumber(string helpText, bool isRequired)
         {
-            long input=0;
+            long input = default(int);
             try
             {
                 Console.Write(helpText);
@@ -34,6 +34,7 @@ namespace BankApplication.Utilities
                 if (input > 9999999999)
                 {
                     Console.WriteLine("Phone number is not valid");
+                    input = GetPhoneNumber(helpText, isRequired);
                 }
                 if (isRequired && string.IsNullOrEmpty(input.ToString()))
                 {
@@ -45,6 +46,7 @@ namespace BankApplication.Utilities
                 Console.WriteLine(ex.Message);
                 GetStringInput(helpText, isRequired);
             }
+
             return input;
         }
     }

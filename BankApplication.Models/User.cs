@@ -6,7 +6,7 @@ namespace BankApplication.Models
         public string Id { get; set; }
         public string Name { get; set; }
         public GenderType Gender { set; get; }
-        public int PhoneNumber { get; set; }
+        public long PhoneNumber { get; set; }
         public string Address { get; set; }
         public string BankId { get; set; }
         public string BranchId { get; set; }
