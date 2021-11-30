@@ -6,128 +6,99 @@ namespace BankApplication.Services
 {
     public class AccountHolderService
     {
-        public void UpdateAccountHolder(BankAccount bankaccount,string userid)
+        public bool UpdateAccountHolder(AccountHolder accountholder)
         {
-            BankAccount oldbankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
-            oldbankaccount.Name = bankaccount.Name != null ? oldbankaccount.Name : bankaccount.Name;
-            oldbankaccount.PhoneNumber = bankaccount.PhoneNumber != null ? oldbankaccount.PhoneNumber : bankaccount.PhoneNumber;
-            oldbankaccount.Address = bankaccount.Address !=null ? oldbankaccount.Address : bankaccount.Address;
+            try
+            {
+                Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == accountholder.Id));
+                AccountHolder oldaccountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == accountholder.Id) : null;
+                oldaccountholder.Name = accountholder.Name != null ? oldaccountholder.Name : accountholder.Name;
+                oldaccountholder.PhoneNumber = accountholder.PhoneNumber != default(int) ? oldaccountholder.PhoneNumber : accountholder.PhoneNumber;
+                oldaccountholder.Address = accountholder.Address != null ? oldaccountholder.Address : accountholder.Address;
+                return true;
+            }
+            catch(Exception ex)
+            {
+                return false;
+            }
+            return false;
         }
 
         public bool DeleteAccountHolderAccount(string userid)
         {
-            bool Isdeleted = false;
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
-            if (bankaccount != null)
+            try
             {
-                BankDatabase.BankAccounts.Remove(bankaccount);
-                Isdeleted = true;
-            }
-            return Isdeleted;
-        }
-
-        public string Deposit(BankAccount bankaccount, double amt)
-        {
-            string txnid = "TXN";
-            Transaction transaction = new Transaction();
-            bankaccount.Balance += amt;
-            transaction.SrcAccId = bankaccount.Id;
-            transaction.DestAccId = bankaccount.Id;
-            transaction.Amount = amt;
-            transaction.CreatedBy = bankaccount.Id;
-            transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
-            transaction.Id = "TXN" + bankaccount.Id + bankaccount.Id + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
-            transaction.Type = TransactionType.Credit;
-            bankaccount.Transactions.Add(transaction);
-            txnid = transaction.Id;
-            return txnid;
-        }
-
-        public string Withdraw(BankAccount bankaccount, double amt)
-        {
-            string txnid = "TXN";
-            Transaction transaction = new Transaction();
-            if (bankaccount.Balance >= amt)
-            {
-                bankaccount.Balance -= amt;
-                transaction.SrcAccId = bankaccount.Id;
-                transaction.DestAccId = bankaccount.Id;
-                transaction.Amount = amt;
-                transaction.CreatedBy = bankaccount.Id;
-                transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
-                transaction.Id = "TXN" + bankaccount.Id + bankaccount.Id + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
-                transaction.Type = TransactionType.Debit;
-                bankaccount.Transactions.Add(transaction);
-                txnid = transaction.Id;
-            }
-            else
-            {
-                Console.WriteLine("You do not have sufficient money");
-            }
-            return txnid;
-        }
-
-        public string Transfer(BankAccount bankaccount, BankAccount recevierbankaccount, double amt, Charges charge)
-        {
-            string txnid = "TXN";
-            Transaction transaction = new Transaction();
-            if (bankaccount != null && recevierbankaccount != null)
-            {
-                recevierbankaccount.Balance += amt;
-                transaction.SrcAccId = bankaccount.Id;
-                transaction.DestAccId = recevierbankaccount.Id;
-                transaction.Amount = amt;
-                transaction.CreatedBy = bankaccount.Id;
-                transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
-                transaction.Id = "TXN" + bankaccount.Id + recevierbankaccount.Id + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
-                transaction.Type = TransactionType.Transfer;
-                txnid = transaction.Id;
-                if (bankaccount.BankId == recevierbankaccount.BankId)
+                Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == userid));
+                AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == userid) : null;
+                if (accountholder != null)
                 {
-                    bankaccount.Balance = charge == Charges.RTGS ? (bankaccount.Balance >= amt ? bankaccount.Balance - amt : 0) : (bankaccount.Balance >= amt + (0.05 * amt) ? bankaccount.Balance - (amt + (0.05 * amt)) : 0);
-                    bankaccount.Transactions.Add(transaction);
-                    recevierbankaccount.Transactions.Add(transaction);
-                }
-                else
-                {
-                    bankaccount.Balance = charge == Charges.RTGS ? (bankaccount.Balance >= amt + (0.02 * amt) ? bankaccount.Balance - (amt + (0.02 * amt)) : 0) : (bankaccount.Balance >= amt + (0.06 * amt) ? bankaccount.Balance -= (amt + (0.06 * amt)) : 0);
-                    bankaccount.Transactions.Add(transaction);
-                    recevierbankaccount.Transactions.Add(transaction);
+                    bank.AccountHolders.Remove(accountholder);
+                    return true;
                 }
             }
-            return txnid;
+            catch(Exception ex)
+            {
+                return false;
+            }
+            return false;
         }
-
-        public void ViewTransactions(BankAccount bankaccount)
+        public void ViewTransactions(AccountHolder AccountHolder)
         {
-            foreach(var i in bankaccount.Transactions)
+            foreach(var i in AccountHolder.Transactions)
             {
                 Console.WriteLine(i.SrcAccId + " to " + i.DestAccId + " of " + i.Amount);
             }
         }
 
-        public void revertTransaction(Transaction transaction)
+        public bool revertTransaction(Transaction transaction)
         {
-            BankAccount senderbankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == transaction.SrcAccId);
-            BankAccount receiverbankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == transaction.DestAccId);
-            senderbankaccount.Balance += transaction.Amount;
-            receiverbankaccount.Balance -= transaction.Amount;
-            senderbankaccount.Transactions.Add(transaction);
-            receiverbankaccount.Transactions.Add(transaction);
+            try
+            {
+                Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Transactions.Any(trans => trans.Id == transaction.Id)));
+                AccountHolder senderaccountholder = bank.AccountHolders.Find(AccountHolder => AccountHolder.Id == transaction.SrcAccId);
+                AccountHolder receiveraccountholder = bank.AccountHolders.Find(AccountHolder => AccountHolder.Id == transaction.DestAccId);
+                senderaccountholder.Balance += transaction.Amount;
+                receiveraccountholder.Balance -= transaction.Amount;
+                senderaccountholder.Transactions.Add(transaction);
+                receiveraccountholder.Transactions.Add(transaction);
+                return true;
+            }
+            catch(Exception)
+            {
+                return false;
+            }
+            return false;
         }
 
-        public void AddCurrency(string currencyCode, double exchangeRate,Bank bank)
+        public bool AddCurrency(string currencyCode, double exchangeRate,Bank bank)
         {
-            bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "currencyCode", ExchangeRate = exchangeRate });
+            try
+            {
+                bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "currencyCode", ExchangeRate = exchangeRate });
+            }
+            catch(Exception ex)
+            {
+                return false;
+            }
+            return false;
         }
 
-        public void UpdateCharges(Bank bank,string Bankid)
+        public bool UpdateCharges(Bank bank)
         {
-            Bank oldbank = BankDatabase.Banks.Find(bank => bank.Id == Bankid);
-            bank.RTGSChargesforSameBank = bank.RTGSChargesforSameBank != 0 ? oldbank.RTGSChargesforSameBank : bank.RTGSChargesforSameBank;
-            bank.RTGSChargesforDifferentBank = bank.RTGSChargesforDifferentBank != 0 ? oldbank.RTGSChargesforDifferentBank : bank.RTGSChargesforDifferentBank;
-            bank.IMPSChargesforSameBank = bank.IMPSChargesforSameBank != 0 ? oldbank.IMPSChargesforSameBank : bank.IMPSChargesforSameBank;
-            bank.IMPSChargesforDifferentBank = bank.IMPSChargesforDifferentBank != 0 ? oldbank.IMPSChargesforDifferentBank : bank.IMPSChargesforDifferentBank;
+            try
+            {
+                Bank oldbank = BankDatabase.Banks.Find(bank => bank.Id == bank.Id);
+                bank.RTGSChargesforSameBank = bank.RTGSChargesforSameBank != default(int) ? oldbank.RTGSChargesforSameBank : bank.RTGSChargesforSameBank;
+                bank.RTGSChargesforDifferentBank = bank.RTGSChargesforDifferentBank != default(int) ? oldbank.RTGSChargesforDifferentBank : bank.RTGSChargesforDifferentBank;
+                bank.IMPSChargesforSameBank = bank.IMPSChargesforSameBank != default(int) ? oldbank.IMPSChargesforSameBank : bank.IMPSChargesforSameBank;
+                bank.IMPSChargesforDifferentBank = bank.IMPSChargesforDifferentBank != default(int) ? oldbank.IMPSChargesforDifferentBank : bank.IMPSChargesforDifferentBank;
+                return true;
+            }
+            catch(Exception)
+            {
+                return false;
+            }
+            return false;
         }
     }
 }

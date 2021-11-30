@@ -21,22 +21,21 @@ namespace BankApplication.Utilities
                 Console.WriteLine("Please provide valid input");
                 GetStringInput(helpText, isRequired);
             }
-
             return input;
         }
 
-        public static int GetPhoneNumber(string helpText, bool isRequired)
+        public static long GetPhoneNumber(string helpText, bool isRequired)
         {
-            int input;
+            long input=0;
             try
             {
                 Console.Write(helpText);
-                input = Console.ReadLine();
+                input = Convert.ToInt64(Console.ReadLine());
                 if (input > 9999999999)
                 {
                     Console.WriteLine("Phone number is not valid");
                 }
-                if (isRequired && string.IsNullOrEmpty(input) && input.Length != 10)
+                if (isRequired && string.IsNullOrEmpty(input.ToString()))
                 {
                     input = GetPhoneNumber(helpText, isRequired);
                 }
@@ -46,7 +45,6 @@ namespace BankApplication.Utilities
                 Console.WriteLine(ex.Message);
                 GetStringInput(helpText, isRequired);
             }
-
             return input;
         }
     }

@@ -30,27 +30,29 @@ namespace BankApplication.Services
             return user;
         }
 
-        public BankAccount Login(string userid, string password)
+        public AccountHolder Login(string userid, string password)
         {
-            BankAccount user = null;
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid && bankaccount.Password == password);
-            if (bankaccount != null)
+            AccountHolder user = null;
+            Bank bank2 = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == userid));
+            AccountHolder accountholder = bank2 != null ? bank2.AccountHolders.Find(account => account.Id == userid) : null;
+            if (accountholder != null)
             {
-                user = bankaccount;
+                user = accountholder;
             }
             return user;
         }
 
         public string ResetPassword(string userid)
         {
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
+            Bank bank2 = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == userid));
+            AccountHolder accountholder = bank2 != null ? bank2.AccountHolders.Find(account => account.Id == userid) : null;
             string password = Utilities.Utilities.GetStringInput("Enter the new password  :  ", true);
             while (password != Utilities.Utilities.GetStringInput("Re-Enter the password  :  ", true))
             {
                 Console.WriteLine("Password does not matched! Please try Again");
             }
-            bankaccount.Password = password;
-            return bankaccount.Password;
+            accountholder.Password = password;
+            return accountholder.Password;
         }
     }
 }

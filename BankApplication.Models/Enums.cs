@@ -13,7 +13,6 @@
         Withdraw,
         Transfer,
         ViewBalance,
-        ViewTransactions,
         Exit
     }
 
