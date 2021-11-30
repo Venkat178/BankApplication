@@ -13,7 +13,7 @@ namespace BankApplication.Models
 
 			this.Employees = new List<Employee>();
 
-			this.BankAccounts = new List<BankAccount>();
+			this.AccountHolders = new List<AccountHolder>();
 		}
 
 		public string Id { get; set; }
@@ -25,7 +25,7 @@ namespace BankApplication.Models
 		public List<CurrencyCode> CurrencyCodes { get; set; }
 		public List<Branch> Branches { get; set; }
         public List<Employee> Employees { get; set; }
-        public List<BankAccount> BankAccounts { get; set; }
+        public List<AccountHolder> AccountHolders { get; set; }
 	}
 
     public class CurrencyCode
@@ -35,6 +35,8 @@ namespace BankApplication.Models
 		public string Code { get; set; }
 
 		public double ExchangeRate { get; set; }
+
+		public bool IsDefault { get; set; }
     }
 
     public class Branch

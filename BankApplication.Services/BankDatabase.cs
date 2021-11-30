@@ -6,8 +6,11 @@ namespace BankApplication.Services
 {
     public class BankDatabase
     {
-        public static List<Bank> Banks = new List<Bank>();
+        public BankDatabase()
+        {
+            Banks = new List<Bank>();
+        }
 
-        public static List<BankAccount> BankAccounts = new List<BankAccount>();
+        public static List<Bank> Banks;
     }
 }

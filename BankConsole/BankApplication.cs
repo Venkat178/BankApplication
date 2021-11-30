@@ -12,11 +12,6 @@ namespace BankApplication
             this.MainMenu();
         }
 
-        public void MainmenuLogin()
-        {
-            
-        }
-
         public void MainMenu()
         {
             try
@@ -123,8 +118,6 @@ namespace BankApplication
                 Address = Utilities.Utilities.GetStringInput("Enter the Branch Address  :  ", true),
                 IFSCCode = Utilities.Utilities.GetStringInput("Enter the Branch IFSCCode  :  ", true)
             };
-            
-            
 
             Console.WriteLine("Please provide admin details to set up admin");
             Employee admin = new Employee()
@@ -135,13 +128,12 @@ namespace BankApplication
                 Address = Utilities.Utilities.GetStringInput("Enter the Your Address  :  ", true),
                 Gender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.Utilities.GetStringInput("Enter the Your Gender  :  ", true), true)
             };
-            
-            string password = Utilities.Utilities.GetStringInput("Enter the new password  :  ", true);
-            while (password != Utilities.Utilities.GetStringInput("Re-Enter the password  :  ", true))
+
+            admin.Password = Utilities.Utilities.GetStringInput("Enter the new password  :  ", true);
+            while (admin.Password != Utilities.Utilities.GetStringInput("Re-Enter the password  :  ", true))
             {
                 Console.WriteLine("Password does not matched! Please try Again");
             }
-            admin.Password = password;
             BankService bankService = new BankService();
             Status status = bankService.SetUpBank(branch, bank, admin);
             Console.WriteLine(bank.Id);
@@ -664,13 +656,13 @@ namespace BankApplication
             BankService bankservice = new BankService();
             bankservice.ViewAllAccounts();
             string accountNo = Utilities.Utilities.GetStringInput("Enter the account number  :  ", true);
-            BankAccount bankaccount = bankservice.GetAccountHolder(accountNo);
+            AccountHolder bankaccount = bankservice.GetAccountHolder(accountNo);
             if (bankaccount != null)
             {
                 bankaccount.Name = Utilities.Utilities.GetStringInput("Enter the Name to Update  :  ", true);
                 bankaccount.PhoneNumber = Utilities.Utilities.GetPhoneNumber("Enter the Phone Number to Update  :  ", true);
                 bankaccount.Address = Utilities.Utilities.GetStringInput("Enter the Address to Update  :  ", true);
-                employeeservice.UpdateAccountHolder(bankaccount, accountNo);
+                employeeservice.UpdateAccountHolder(bankaccount);
             }
             else
             {

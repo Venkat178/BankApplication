@@ -12,7 +12,7 @@ namespace BankApplication.Services
             try
             {
                 bank.Id = bank.Name + DateTime.Now.ToString("yyyyMMddHHmmss");
-                bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "INR", ExchangeRate = 1 });
+                bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "INR", ExchangeRate = 1, IsDefault = true });
                 bank.IMPSChargesforSameBank = 5;
                 bank.RTGSChargesforSameBank = 0;
                 bank.IMPSChargesforDifferentBank = 6;
@@ -38,17 +38,18 @@ namespace BankApplication.Services
             return status;
         }
 
-        public string Register(Bank bank, BankAccount bankaccount)
+        public Status Register(Bank bank, BankAccount bankaccount)
         {
             if (BankDatabase.BankAccounts.Count != 0 && BankDatabase.BankAccounts.Any(p => p.Name == bankaccount.Name) == true)
             {
-                throw new Exception("Account already exists!");
+                return new Status() { IsSuccess = false, Message = "Account already exists!" };
             }
             bankaccount.Id = bankaccount.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
             bankaccount.Type = UserType.AccountHolder;
             bank.BankAccounts.Add(bankaccount);
             BankDatabase.BankAccounts.Add(bankaccount);
-            return bankaccount.Id;
+            bankaccount.Id;
+            return new Status() { IsSuccess = true, Message = "Account Created successfully...!" };
         }
 
         public string EmployeeRegister(Employee employee,Bank bank)
@@ -134,9 +135,9 @@ namespace BankApplication.Services
             return txnid;
         }
 
-        public BankAccount GetAccountHolder(string accountid)
+        public AccountHolder GetAccountHolder(string accountid)
         {
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == accountid);
+            AccountHolder bankaccount = BankDatabase.Banks.Find(bankaccount => bankaccount.Id == accountid);
             return bankaccount;
         }
 

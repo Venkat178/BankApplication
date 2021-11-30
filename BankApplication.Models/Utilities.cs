@@ -18,21 +18,21 @@ namespace BankApplication.Utilities
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Please provide valid input");
                 GetStringInput(helpText, isRequired);
             }
 
             return input;
         }
 
-        public static string GetPhoneNumber(string helpText, bool isRequired)
+        public static int GetPhoneNumber(string helpText, bool isRequired)
         {
-            string input = string.Empty;
+            int input;
             try
             {
                 Console.Write(helpText);
                 input = Console.ReadLine();
-                if (input.Length != 10)
+                if (input > 9999999999)
                 {
                     Console.WriteLine("Phone number is not valid");
                 }
