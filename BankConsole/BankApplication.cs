@@ -14,68 +14,7 @@ namespace BankApplication
 
         public void MainmenuLogin()
         {
-            AccountService accountservice = new AccountService();
-            string loginid = Utilities.Utilities.GetStringInput("Enter the user Id  :  ", true);
-            try
-            {
-                Bank bank = BankDatabase.Banks.Find(bank => bank.Employees.Any(employee => employee.Id == loginid && employee.Type == UserType.Admin));
-                Employee admin = bank != null ? bank.Employees.Find(employee => employee.Id == loginid && employee.Type == UserType.Admin) : null;
-                if (admin != null)
-                {
-                    string adminpassword = Utilities.Utilities.GetStringInput("Enter the Password  :  ", true);
-                    if (adminpassword == admin.Password)
-                    {
-                        Employee loginadmin = accountservice.AdminLogin(loginid, adminpassword);
-                        Console.WriteLine("Login Successfully");
-                        this.AdminConsole(loginadmin);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Wrong password");
-                    }
-                }
-                Bank bank1 = BankDatabase.Banks.Find(b => b.Employees.Any(employee => employee.Id == loginid && employee.Type == UserType.Employee));
-                Employee employee = bank1 != null ? bank1.Employees.Find(employee => employee.Id == loginid && employee.Type == UserType.Employee) : null;
-                if (employee != null)
-                {
-                    string employeepassword = Utilities.Utilities.GetStringInput("Enter the Password  :  ", true);
-                    if (employeepassword == employee.Password)
-                    {
-                        Employee loginemployee = accountservice.EmployeeLogin(loginid, employeepassword);
-                        Console.WriteLine("Login Successfully");
-                        this.EmployeeConsole(loginemployee);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Wrong password");
-                    }
-                }
-                BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == loginid);
-                if (bankaccount != null)
-                {
-                    string bankaccountpassword = Utilities.Utilities.GetStringInput("Enter the Password  :  ", true);
-                    if (bankaccountpassword == bankaccount.Password)
-                    {
-                        BankAccount loginuser = accountservice.Login(loginid, bankaccountpassword);
-                        Console.WriteLine("Login Successfully");
-                        this.AccountHolderConsole(loginuser);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Wrong password");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("User not found");
-                    this.MainmenuLogin();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                this.MainmenuLogin();
-            }
+            
         }
 
         public void MainMenu()
@@ -91,7 +30,72 @@ namespace BankApplication
                         this.SetUpBank();
                         break;
                     case Mainmenu.Login:
-                        this.MainmenuLogin();
+                        AccountService accountservice = new AccountService();
+                        string loginid = Utilities.Utilities.GetStringInput("Enter the user Id  :  ", true);
+                        try
+                        {
+                            Bank bank = BankDatabase.Banks.Find(bank => bank.Employees.Any(employee => employee.Id == loginid && employee.Type == UserType.Admin));
+                            Employee admin = bank != null ? bank.Employees.Find(employee => employee.Id == loginid && employee.Type == UserType.Admin) : null;
+                            if (admin != null)
+                            {
+                                string adminpassword = Utilities.Utilities.GetStringInput("Enter the Password  :  ", true);
+                                if (adminpassword == admin.Password)
+                                {
+                                    Employee loginadmin = accountservice.AdminLogin(loginid, adminpassword);
+                                    Console.WriteLine("Login Successfully");
+                                    this.AdminConsole(loginadmin);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Wrong password");
+                                }
+                                break;
+                            }
+                            
+                            Bank bank1 = BankDatabase.Banks.Find(b => b.Employees.Any(employee => employee.Id == loginid && employee.Type == UserType.Employee));
+                            Employee employee = bank1 != null ? bank1.Employees.Find(employee => employee.Id == loginid && employee.Type == UserType.Employee) : null;
+                            if (employee != null)
+                            {
+                                string employeepassword = Utilities.Utilities.GetStringInput("Enter the Password  :  ", true);
+                                if (employeepassword == employee.Password)
+                                {
+                                    Employee loginemployee = accountservice.EmployeeLogin(loginid, employeepassword);
+                                    Console.WriteLine("Login Successfully");
+                                    this.EmployeeConsole(loginemployee);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Wrong password");
+                                }
+                                break;
+                            }
+                            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == loginid);
+                            if (bankaccount != null)
+                            {
+                                string bankaccountpassword = Utilities.Utilities.GetStringInput("Enter the Password  :  ", true);
+                                if (bankaccountpassword == bankaccount.Password)
+                                {
+                                    BankAccount loginuser = accountservice.Login(loginid, bankaccountpassword);
+                                    Console.WriteLine("Login Successfully");
+                                    this.AccountHolderConsole(loginuser);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Wrong password");
+                                }
+                                break;
+                            }
+                            else
+                            {
+                                Console.WriteLine("User not found");
+                                this.MainmenuLogin();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                            this.MainmenuLogin();
+                        }
                         break;
                     case Mainmenu.Exit:
                         Environment.Exit(0);
@@ -246,7 +250,7 @@ namespace BankApplication
         {
             BankService bankservice = new BankService();
             Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.Utilities.GetStringInput("What type of transfer you want IMPS/RTGS", true), true);
-            string destuserId = Utilities.Utilities.GetStringInput("Enter the Reciever's BankId  :  ", true);
+            string destuserId = Utilities.Utilities.GetStringInput("Enter the Reciever's Id  :  ", true);
             BankAccount recevierbankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == destuserId);
             if (recevierbankaccount!=null)
             {
@@ -309,7 +313,7 @@ namespace BankApplication
             {
                 try
                 {
-                    Console.WriteLine("1. Deposit \n2. Withdraw \n3. Transfer \n4. View Balance \n5. View Transactions \n6. Exit .");
+                    Console.WriteLine("1. Deposit \n2. Withdraw \n3. Transfer \n4. View Balance \n5. Exit .");
                     Console.Write("Please select your option   :   ");
                     AccountHolderMenu ch = (AccountHolderMenu)Enum.Parse(typeof(AccountHolderMenu), Console.ReadLine(), true);
                     switch (ch)
@@ -567,56 +571,49 @@ namespace BankApplication
             {
                 try
                 {
-                    if (employee != null)
+                    Console.WriteLine("1. CreateAccountHolder\n2. UpdateAccountHolder\n3. DeleteAccountHolder\n4. Deposit\n5. Withdraw\n6. Transfer\n7. RevertTransaction\n8. ViewTransactions\n9. AddCurrency\n10. UpdateCharges\n11. Exit");
+                    Console.Write("Please select your option   :   ");
+                    EmployeeMenu option2 = (EmployeeMenu)Enum.Parse(typeof(EmployeeMenu), Console.ReadLine(), true);
+                    switch (option2)
                     {
-                        Console.WriteLine("1. CreateAccountHolder\n2. UpdateAccountHolderDetails\n3. DeleteAccountHolder\n4. Deposit\n5. Withdraw\n6. Transfer\n7. RevertTransaction\n8. ViewTransactions\n9. AddCurrency\n10. UpdateCharges\n11. Exit");
-                        Console.Write("Please select your option   :   ");
-                        EmployeeMenu option2 = (EmployeeMenu)Enum.Parse(typeof(EmployeeMenu), Console.ReadLine(), true);
-                        switch (option2)
-                        {
-                            case EmployeeMenu.CreateAccountHolder:
-                                string accountholderid = this.AccountHolderRegistration();
-                                Console.WriteLine("The Account Holder Is  :  " + accountholderid);
-                                break;
-                            case EmployeeMenu.UpdateAccountHolder:
-                                this.EmployeeConsoleUpdateAccountHolder();
-                                break;
-                            case EmployeeMenu.DeleteAccountHolder:
-                                this.EmployeeConsoleDeleteAccountHolder();
-                                break;
-                            case EmployeeMenu.Deposit:
-                                this.EmployeeConsoleDeposit();
-                                break;
-                            case EmployeeMenu.Withdraw:
-                                this.EmployeeConsoleWithdraw();
-                                break;
-                            case EmployeeMenu.Transfer:
-                                this.EmployeeConsoleTransfer();
-                                break;
-                            case EmployeeMenu.RevertTransaction:
-                                this.EmployeeConsoleRevertTransaction();
-                                break;
-                            case EmployeeMenu.ViewTransactions:
-                                this.EmployeeConsoleViewTransactions();
-                                break;
-                            case EmployeeMenu.AddCurrency:
-                                this.EmployeeConsoleAddCurrency();
-                                break;
-                            case EmployeeMenu.UpdateCharges:
-                                this.EmployeeConsoleUpdateCharges();
-                                break;
-                            case EmployeeMenu.Exit:
-                                employee = null;
-                                employeemenuflag = false;
-                                break;
-                            default:
-                                Console.WriteLine("Your option is not valid");
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Sorry,User do not found with this Id .");
+                        case EmployeeMenu.CreateAccountHolder:
+                            string accountholderid = this.AccountHolderRegistration();
+                            Console.WriteLine("The Account Holder Is  :  " + accountholderid);
+                            break;
+                        case EmployeeMenu.UpdateAccountHolder:
+                            this.EmployeeConsoleUpdateAccountHolder();
+                            break;
+                        case EmployeeMenu.DeleteAccountHolder:
+                            this.EmployeeConsoleDeleteAccountHolder();
+                            break;
+                        case EmployeeMenu.Deposit:
+                            this.EmployeeConsoleDeposit();
+                            break;
+                        case EmployeeMenu.Withdraw:
+                            this.EmployeeConsoleWithdraw();
+                            break;
+                        case EmployeeMenu.Transfer:
+                            this.EmployeeConsoleTransfer();
+                            break;
+                        case EmployeeMenu.RevertTransaction:
+                            this.EmployeeConsoleRevertTransaction();
+                            break;
+                        case EmployeeMenu.ViewTransactions:
+                            this.EmployeeConsoleViewTransactions();
+                            break;
+                        case EmployeeMenu.AddCurrency:
+                            this.EmployeeConsoleAddCurrency();
+                            break;
+                        case EmployeeMenu.UpdateCharges:
+                            this.EmployeeConsoleUpdateCharges();
+                            break;
+                        case EmployeeMenu.Exit:
+                            employee = null;
+                            employeemenuflag = false;
+                            break;
+                        default:
+                            Console.WriteLine("Your option is not valid");
+                            break;
                     }
                 }
                 catch (Exception ex)
@@ -861,8 +858,8 @@ namespace BankApplication
                 while (AdminMenuflag)
                 {
                     Console.WriteLine("1. CreateEmployee\n2. UpdateEmployee\n3. DeleteEmployee\n4. CreateAccountHolder\n5. UpdateAccountHolder\n6. DeleteAccountHolder\n7. Deposit\n8. Withdraw\n9. Transfer\n10. RevertTransaction\n11. AddBranch\n12. DeleteBranch\n13. AddCurrency\n14. Exit");
-                    AdminMenu option2 = (AdminMenu)Enum.Parse(typeof(AdminMenu), Utilities.Utilities.GetStringInput("Please select your option   :   ", true), true);
-                    switch (option2)
+                    AdminMenu option = (AdminMenu)Enum.Parse(typeof(AdminMenu), Utilities.Utilities.GetStringInput("Please select your option   :   ", true), true);
+                    switch (option)
                     {
                         case AdminMenu.CreateEmployee:
                             string employeeid = this.EmployeeRegistration();

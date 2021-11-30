@@ -21,7 +21,7 @@ namespace BankApplication.Services
                 branch.Id = branch.Name + DateTime.Now.ToString("yyyyMMddHHmmss");
                 branch.IsMainBranch = true;
 
-                admin.Id = bank.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
+                admin.Id = admin.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
                 admin.Role = "Admin";
                 bank.Employees.Add(admin);
 
