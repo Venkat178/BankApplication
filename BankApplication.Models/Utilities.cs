@@ -34,11 +34,11 @@ namespace BankApplication.Utilities
                 input = Console.ReadLine();
                 if (input.Length != 10)
                 {
-                    //throw new PhoneNumberNotValidException("Phone number is not valid");
+                    Console.WriteLine("Phone number is not valid");
                 }
-                if (isRequired && string.IsNullOrEmpty(input))
+                if (isRequired && string.IsNullOrEmpty(input) && input.Length != 10)
                 {
-                    input = GetStringInput(helpText, isRequired);
+                    input = GetPhoneNumber(helpText, isRequired);
                 }
             }
             catch (Exception ex)

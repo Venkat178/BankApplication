@@ -9,8 +9,8 @@ namespace BankApplication.Services
         public Employee AdminLogin(string employeeid, string password)
         {
             Employee user = null;
-            Bank bank = BankDatabase.Banks.Find(b => b.Admins.Any(employee=> employee.Id == employeeid));
-            Employee admin = bank != null ? bank.Admins.Find(employee => employee.Id == employeeid) : null;
+            Bank bank = BankDatabase.Banks.Find(b => b.Employees.Any(employee=> employee.Id == employeeid && employee.Type == UserType.Admin));
+            Employee admin = bank != null ? bank.Employees.Find(employee => employee.Id == employeeid) : null;
             if (admin != null)
             {
                 user = admin;

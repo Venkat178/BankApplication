@@ -6,26 +6,28 @@ namespace BankApplication.Services
 {
     public class AccountHolderService
     {
-        public void UpdateAccountHolderDetails(BankAccount bankaccount,string userid)
+        public void UpdateAccountHolder(BankAccount bankaccount,string userid)
         {
             BankAccount oldbankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
-            oldbankaccount.Name = bankaccount.Name == "no" ? oldbankaccount.Name : bankaccount.Name;
-            oldbankaccount.PhoneNumber = bankaccount.PhoneNumber == "no" ? oldbankaccount.PhoneNumber : bankaccount.PhoneNumber;
-            oldbankaccount.Address = bankaccount.Address == "no" ? oldbankaccount.Address : bankaccount.Address;
+            oldbankaccount.Name = bankaccount.Name != null ? oldbankaccount.Name : bankaccount.Name;
+            oldbankaccount.PhoneNumber = bankaccount.PhoneNumber != null ? oldbankaccount.PhoneNumber : bankaccount.PhoneNumber;
+            oldbankaccount.Address = bankaccount.Address !=null ? oldbankaccount.Address : bankaccount.Address;
         }
 
-        public void DeleteAccountHolderAccount(string userid)
+        public bool DeleteAccountHolderAccount(string userid)
         {
+            bool Isdeleted = false;
             BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
             if (bankaccount != null)
             {
                 BankDatabase.BankAccounts.Remove(bankaccount);
+                Isdeleted = true;
             }
+            return Isdeleted;
         }
 
-        public string Deposit(string userid, double amt)
+        public string Deposit(BankAccount bankaccount, double amt)
         {
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
             string txnid = "TXN";
             Transaction transaction = new Transaction();
             bankaccount.Balance += amt;
@@ -41,9 +43,8 @@ namespace BankApplication.Services
             return txnid;
         }
 
-        public string Withdraw(string userid, double amt)
+        public string Withdraw(BankAccount bankaccount, double amt)
         {
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
             string txnid = "TXN";
             Transaction transaction = new Transaction();
             if (bankaccount.Balance >= amt)
@@ -66,140 +67,53 @@ namespace BankApplication.Services
             return txnid;
         }
 
-        public string Transfer(string srcId,string destuserId,double amt,Charges charge)
+        public string Transfer(BankAccount bankaccount, BankAccount recevierbankaccount, double amt, Charges charge)
         {
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == srcId);
             string txnid = "TXN";
             Transaction transaction = new Transaction();
-            BankAccount recevierbankaccount = BankDatabase.BankAccounts.Find(bankacount => bankaccount.Id == destuserId);
-            if(bankaccount!=null)
+            if (bankaccount != null && recevierbankaccount != null)
             {
-                if(recevierbankaccount!=null)
+                recevierbankaccount.Balance += amt;
+                transaction.SrcAccId = bankaccount.Id;
+                transaction.DestAccId = recevierbankaccount.Id;
+                transaction.Amount = amt;
+                transaction.CreatedBy = bankaccount.Id;
+                transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
+                transaction.Id = "TXN" + bankaccount.Id + recevierbankaccount.Id + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
+                transaction.Type = TransactionType.Transfer;
+                txnid = transaction.Id;
+                if (bankaccount.BankId == recevierbankaccount.BankId)
                 {
-                    if (bankaccount.BankId == recevierbankaccount.BankId)
-                    {
-                        if (charge == Charges.RTGS)
-                        {
-                            if (bankaccount.Balance >= amt)
-                            {
-                                bankaccount.Balance -= amt;
-                                recevierbankaccount.Balance += amt;
-                                transaction.SrcAccId = bankaccount.Id;
-                                transaction.DestAccId = destuserId;
-                                transaction.Amount = amt;
-                                transaction.CreatedBy = bankaccount.Id;
-                                transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
-                                transaction.Id = "TXN" + bankaccount.Id + destuserId + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
-                                transaction.Type = TransactionType.Transfer;
-                                bankaccount.Transactions.Add(transaction);
-                                recevierbankaccount.Transactions.Add(transaction);
-                                txnid = transaction.Id;
-                            }
-                            else
-                            {
-                                Console.WriteLine("You do not have sufficient money");
-                            }
-                        }
-                        else
-                        {
-                            if (bankaccount.Balance >= amt+ (0.05 * amt))
-                            {
-                                bankaccount.Balance -= (amt + (0.05 * amt));
-                                recevierbankaccount.Balance += amt;
-                                transaction.SrcAccId = bankaccount.Id;
-                                transaction.DestAccId = destuserId;
-                                transaction.Amount = amt;
-                                transaction.CreatedBy = bankaccount.Id;
-                                transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
-                                transaction.Id = "TXN" + bankaccount.Id + destuserId + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
-                                transaction.Type = TransactionType.Transfer;
-                                bankaccount.Transactions.Add(transaction);
-                                recevierbankaccount.Transactions.Add(transaction);
-                                txnid = transaction.Id;
-                            }
-                            else
-                            {
-                                Console.WriteLine("You do not have sufficient money");
-                            }
-                            
-                        }
-                    }
-                    else
-                    {
-                        if (charge == Charges.RTGS)
-                        {
-                            if (bankaccount.Balance >= amt + (0.02 * amt))
-                            {
-                                bankaccount.Balance -= (amt + (0.02 * amt));
-                                recevierbankaccount.Balance += amt;
-                                transaction.SrcAccId = bankaccount.Id;
-                                transaction.DestAccId = destuserId;
-                                transaction.Amount = amt;
-                                transaction.CreatedBy = bankaccount.Id;
-                                transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
-                                transaction.Id = "TXN" + bankaccount.Id + destuserId + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
-                                transaction.Type = TransactionType.Transfer;
-                                bankaccount.Transactions.Add(transaction);
-                                recevierbankaccount.Transactions.Add(transaction);
-                                txnid = transaction.Id;
-                            }
-                            else
-                            {
-                                Console.WriteLine("You do not have sufficient money");
-                            }
-                        }
-                        else
-                        {
-                            if (bankaccount.Balance >= amt + (0.06 * amt))
-                            {
-                                bankaccount.Balance -= (amt + (0.06 * amt));
-                                recevierbankaccount.Balance += amt;
-                                transaction.SrcAccId = bankaccount.Id;
-                                transaction.DestAccId = destuserId;
-                                transaction.Amount = amt;
-                                transaction.CreatedBy = bankaccount.Id;
-                                transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
-                                transaction.Id = "TXN" + bankaccount.Id + destuserId + bankaccount.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
-                                transaction.Type = TransactionType.Transfer;
-                                bankaccount.Transactions.Add(transaction);
-                                recevierbankaccount.Transactions.Add(transaction);
-                                txnid = transaction.Id;
-                            }
-                            else
-                            {
-                                Console.WriteLine("You do not have sufficient money");
-                            }
-                            
-                        }
-                    }
+                    bankaccount.Balance = charge == Charges.RTGS ? (bankaccount.Balance >= amt ? bankaccount.Balance - amt : 0) : (bankaccount.Balance >= amt + (0.05 * amt) ? bankaccount.Balance - (amt + (0.05 * amt)) : 0);
+                    bankaccount.Transactions.Add(transaction);
+                    recevierbankaccount.Transactions.Add(transaction);
+                }
+                else
+                {
+                    bankaccount.Balance = charge == Charges.RTGS ? (bankaccount.Balance >= amt + (0.02 * amt) ? bankaccount.Balance - (amt + (0.02 * amt)) : 0) : (bankaccount.Balance >= amt + (0.06 * amt) ? bankaccount.Balance -= (amt + (0.06 * amt)) : 0);
+                    bankaccount.Transactions.Add(transaction);
+                    recevierbankaccount.Transactions.Add(transaction);
                 }
             }
             return txnid;
         }
 
-        public void ViewTransactions(string userid)
+        public void ViewTransactions(BankAccount bankaccount)
         {
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == userid);
             foreach(var i in bankaccount.Transactions)
             {
                 Console.WriteLine(i.SrcAccId + " to " + i.DestAccId + " of " + i.Amount);
             }
         }
 
-        public void revertTransaction(string transId)
+        public void revertTransaction(Transaction transaction)
         {
-            BankAccount bankaccount = BankDatabase.BankAccounts.Find(b => b.Transactions.Any(transaction => transaction.Id == transId));
-            Transaction transaction = bankaccount != null ? bankaccount.Transactions.Find(transaction => transaction.Id == transId) : null;
-            if (transaction != null)
-            {
-                BankAccount senderbankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == transaction.SrcAccId);
-                BankAccount receiverbankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == transaction.DestAccId);
-                senderbankaccount.Balance += transaction.Amount;
-                receiverbankaccount.Balance -= transaction.Amount;
-                senderbankaccount.Transactions.Add(transaction);
-                receiverbankaccount.Transactions.Add(transaction);
-
-            }
+            BankAccount senderbankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == transaction.SrcAccId);
+            BankAccount receiverbankaccount = BankDatabase.BankAccounts.Find(bankaccount => bankaccount.Id == transaction.DestAccId);
+            senderbankaccount.Balance += transaction.Amount;
+            receiverbankaccount.Balance -= transaction.Amount;
+            senderbankaccount.Transactions.Add(transaction);
+            receiverbankaccount.Transactions.Add(transaction);
         }
 
         public void AddCurrency(string currencyCode, double exchangeRate,Bank bank)
@@ -207,9 +121,13 @@ namespace BankApplication.Services
             bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "currencyCode", ExchangeRate = exchangeRate });
         }
 
-        public void UpdateCharges()
+        public void UpdateCharges(Bank bank,string Bankid)
         {
-
+            Bank oldbank = BankDatabase.Banks.Find(bank => bank.Id == Bankid);
+            bank.RTGSChargesforSameBank = bank.RTGSChargesforSameBank != 0 ? oldbank.RTGSChargesforSameBank : bank.RTGSChargesforSameBank;
+            bank.RTGSChargesforDifferentBank = bank.RTGSChargesforDifferentBank != 0 ? oldbank.RTGSChargesforDifferentBank : bank.RTGSChargesforDifferentBank;
+            bank.IMPSChargesforSameBank = bank.IMPSChargesforSameBank != 0 ? oldbank.IMPSChargesforSameBank : bank.IMPSChargesforSameBank;
+            bank.IMPSChargesforDifferentBank = bank.IMPSChargesforDifferentBank != 0 ? oldbank.IMPSChargesforDifferentBank : bank.IMPSChargesforDifferentBank;
         }
     }
 }

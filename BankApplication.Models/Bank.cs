@@ -11,8 +11,6 @@ namespace BankApplication.Models
 
 			this.Branches = new List<Branch>();
 
-			this.Admins = new List<Employee>();
-
 			this.Employees = new List<Employee>();
 
 			this.BankAccounts = new List<BankAccount>();
@@ -26,7 +24,6 @@ namespace BankApplication.Models
 		public int RTGSChargesforDifferentBank { get; set; }
 		public List<CurrencyCode> CurrencyCodes { get; set; }
 		public List<Branch> Branches { get; set; }
-		public List<Employee> Admins { get; set; }
         public List<Employee> Employees { get; set; }
         public List<BankAccount> BankAccounts { get; set; }
 	}

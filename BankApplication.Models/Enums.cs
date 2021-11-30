@@ -20,7 +20,7 @@
     public enum EmployeeMenu
     {
         CreateAccountHolder = 1,
-        UpdateAccountHolderDetails,
+        UpdateAccountHolder,
         DeleteAccountHolder,
         Deposit,
         Withdraw,
@@ -35,10 +35,10 @@
     public enum AdminMenu
     {
         CreateEmployee=1,  
-        UpdateEmployeeDetails,
+        UpdateEmployee,
         DeleteEmployee,
         CreateAccountHolder,
-        UpdateAccountHolderDetails,
+        UpdateAccountHolder,
         DeleteAccountHolder,
         Deposit,
         Withdraw,
