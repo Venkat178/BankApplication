@@ -447,8 +447,8 @@ namespace BankApplication
             AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == userid) : null;
             if (accountholder != null)
             {
-                double amt1 = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount to withdraw  :  ", true));
-                string transid1 = bankservice.EmployeeDeposit(accountholder, amt1);
+                double amt = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount to withdraw  :  ", true));
+                string transid1 = bankservice.EmployeeWithdraw(accountholder, amt);
                 Console.WriteLine("the transaction id is : " + transid1);
             }
             else
@@ -771,7 +771,7 @@ namespace BankApplication
             if (accountholder != null)
             {
                 double amt1 = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount to withdraw  :  ", true));
-                string transid1 = bankservice.EmployeeDeposit(accountholder, amt1);
+                string transid1 = bankservice.EmployeeWithdraw(accountholder, amt1);
                 Console.WriteLine("the transaction id is : " + transid1);
             }
             else
