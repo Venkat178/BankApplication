@@ -6,25 +6,24 @@ namespace BankApplication.Services
 {
     public class AccountHolderService
     {
-        public bool UpdateAccountHolder(AccountHolder accountholder)
+        public Status UpdateAccountHolder(AccountHolder accountholder,string accountholderid)
         {
             try
             {
-                Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == accountholder.Id));
-                AccountHolder oldaccountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == accountholder.Id) : null;
-                oldaccountholder.Name = accountholder.Name != null ? oldaccountholder.Name : accountholder.Name;
-                oldaccountholder.PhoneNumber = accountholder.PhoneNumber != default(int) ? oldaccountholder.PhoneNumber : accountholder.PhoneNumber;
-                oldaccountholder.Address = accountholder.Address != null ? oldaccountholder.Address : accountholder.Address;
-                return true;
+                Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == accountholderid));
+                AccountHolder oldaccountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == accountholderid) : null;
+                oldaccountholder.Name = accountholder.Name == string.Empty ? oldaccountholder.Name : accountholder.Name;
+                oldaccountholder.PhoneNumber = accountholder.PhoneNumber == default(long) ? oldaccountholder.PhoneNumber : accountholder.PhoneNumber;
+                oldaccountholder.Address = accountholder.Address == string.Empty ? oldaccountholder.Address : accountholder.Address;
+                return new Status() { IsSuccess = true, Message = "Successfully updated" };
             }
-            catch(Exception ex)
+            catch(Exception)
             {
-                return false;
+                return new Status() { IsSuccess = false, Message = "Changes not done!" }; ;
             }
-            return false;
         }
 
-        public bool DeleteAccountHolderAccount(string userid)
+        public Status DeleteAccountHolderAccount(string userid)
         {
             try
             {
@@ -33,15 +32,16 @@ namespace BankApplication.Services
                 if (accountholder != null)
                 {
                     bank.AccountHolders.Remove(accountholder);
-                    return true;
+                    return new Status() { IsSuccess = true, Message = "Successfully deleted" };
                 }
             }
-            catch(Exception ex)
+            catch(Exception)
             {
-                return false;
+                return new Status() { IsSuccess = false, Message = "Error occured while deleting.Try again" };
             }
-            return false;
+            return new Status() { IsSuccess = false, Message = "Error occured while deleting.Try again" };
         }
+
         public void ViewTransactions(AccountHolder AccountHolder)
         {
             foreach(var i in AccountHolder.Transactions)
@@ -50,7 +50,7 @@ namespace BankApplication.Services
             }
         }
 
-        public bool revertTransaction(Transaction transaction)
+        public Status revertTransaction(Transaction transaction)
         {
             try
             {
@@ -61,44 +61,42 @@ namespace BankApplication.Services
                 receiveraccountholder.Balance -= transaction.Amount;
                 senderaccountholder.Transactions.Add(transaction);
                 receiveraccountholder.Transactions.Add(transaction);
-                return true;
+                return new Status() { IsSuccess = true, Message = "Succefully transfered" };
             }
             catch(Exception)
             {
-                return false;
+                return new Status() { IsSuccess = false, Message = "Error occured while transfering.Try again" };
             }
-            return false;
         }
 
-        public bool AddCurrency(string currencyCode, double exchangeRate,Bank bank)
+        public Status AddCurrency(string currencyCode, double exchangeRate,Bank bank)
         {
             try
             {
-                bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "currencyCode", ExchangeRate = exchangeRate });
+                bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "currencyCode", ExchangeRate = exchangeRate ,IsDefault = false});
+                return new Status() { IsSuccess = true, Message = "Successfully added" };
             }
-            catch(Exception ex)
+            catch(Exception)
             {
-                return false;
+                return new Status() { IsSuccess = false, Message = "Error occured while adding currency.Try again" };
             }
-            return false;
         }
 
-        public bool UpdateCharges(Bank bank)
+        public Status UpdateCharges(Bank bank)
         {
             try
             {
                 Bank oldbank = BankDatabase.Banks.Find(bank => bank.Id == bank.Id);
-                bank.RTGSChargesforSameBank = bank.RTGSChargesforSameBank != default(int) ? oldbank.RTGSChargesforSameBank : bank.RTGSChargesforSameBank;
-                bank.RTGSChargesforDifferentBank = bank.RTGSChargesforDifferentBank != default(int) ? oldbank.RTGSChargesforDifferentBank : bank.RTGSChargesforDifferentBank;
-                bank.IMPSChargesforSameBank = bank.IMPSChargesforSameBank != default(int) ? oldbank.IMPSChargesforSameBank : bank.IMPSChargesforSameBank;
-                bank.IMPSChargesforDifferentBank = bank.IMPSChargesforDifferentBank != default(int) ? oldbank.IMPSChargesforDifferentBank : bank.IMPSChargesforDifferentBank;
-                return true;
+                bank.RTGSChargesforSameBank = bank.RTGSChargesforSameBank == default(int) ? oldbank.RTGSChargesforSameBank : bank.RTGSChargesforSameBank;
+                bank.RTGSChargesforDifferentBank = bank.RTGSChargesforDifferentBank == default(int) ? oldbank.RTGSChargesforDifferentBank : bank.RTGSChargesforDifferentBank;
+                bank.IMPSChargesforSameBank = bank.IMPSChargesforSameBank == default(int) ? oldbank.IMPSChargesforSameBank : bank.IMPSChargesforSameBank;
+                bank.IMPSChargesforDifferentBank = bank.IMPSChargesforDifferentBank == default(int) ? oldbank.IMPSChargesforDifferentBank : bank.IMPSChargesforDifferentBank;
+                return new Status() { IsSuccess = true, Message = "Successfully updated" };
             }
             catch(Exception)
             {
-                return false;
+                return new Status() { IsSuccess = false, Message = "Error occured while updating charges.Try again" };
             }
-            return false;
         }
     }
 }

@@ -31,22 +31,16 @@ namespace BankApplication.Utilities
             {
                 Console.Write(helpText);
                 input = Convert.ToInt64(Console.ReadLine());
-                if (input > 9999999999)
-                {
-                    Console.WriteLine("Phone number is not valid");
-                    input = GetPhoneNumber(helpText, isRequired);
-                }
-                if (isRequired && string.IsNullOrEmpty(input.ToString()))
+                if (isRequired && string.IsNullOrEmpty(input.ToString()) && input > 9999999999)
                 {
                     input = GetPhoneNumber(helpText, isRequired);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Phone number is not valid");
                 GetStringInput(helpText, isRequired);
             }
-
             return input;
         }
     }

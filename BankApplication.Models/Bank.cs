@@ -27,28 +27,4 @@ namespace BankApplication.Models
         public List<Employee> Employees { get; set; }
         public List<AccountHolder> AccountHolders { get; set; }
 	}
-
-    public class CurrencyCode
-    {
-		public int Id { get; set; }
-
-		public string Code { get; set; }
-
-		public double ExchangeRate { get; set; }
-
-		public bool IsDefault { get; set; }
-    }
-
-    public class Branch
-    {
-		public string Id { get; set; }
-
-		public string Name { get; set; }
-
-		public string IFSCCode { get; set; }
-
-		public string Address { get; set; }
-
-		public bool IsMainBranch { get; set; }
-    }
 }

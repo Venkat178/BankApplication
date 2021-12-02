@@ -12,12 +12,11 @@ namespace BankApplication.Services
             try
             {
                 bank.Id = bank.Name + DateTime.Now.ToString("yyyyMMddHHmmss");
-                
-
+                Console.WriteLine(bank.Id);
                 branch.Id = branch.Name + DateTime.Now.ToString("yyyyMMddHHmmss");
                 branch.IsMainBranch = true;
 
-                admin.Id = admin.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
+                admin.EmployeeId = admin.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
                 admin.Role = "Admin";
                 bank.Employees.Add(admin);
 
@@ -48,28 +47,34 @@ namespace BankApplication.Services
 
         public string EmployeeRegister(Employee employee,Bank bank)
         {
-            employee.Type = UserType.Employee;
-            employee.Id = employee.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
-            bank.Employees.Add(employee);
-            return employee.Id;
+            try
+            {
+                employee.Type = UserType.Employee;
+                employee.EmployeeId = employee.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
+                bank.Employees.Add(employee);
+                return employee.EmployeeId;
+            }
+            catch(Exception)
+            {
+                return null;
+            }
         }
-        public string Deposit(AccountHolder AccountHolder, double amt)
+
+        public string Deposit(AccountHolder accountholder, double amt)
         {
-            string txnid = "TXN";
             Transaction transaction = new Transaction()
             {
-                SrcAccId = AccountHolder.Id,
-                DestAccId = AccountHolder.Id,
+                SrcAccId = accountholder.Id,
+                DestAccId = accountholder.Id,
                 Amount = amt,
-                CreatedBy = AccountHolder.Id,
+                CreatedBy = accountholder.Id,
                 CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss"),
-                Id = "TXN" + AccountHolder.Id + AccountHolder.Id + AccountHolder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                Id = "TXN" + accountholder.Id + accountholder.Id + accountholder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
                 Type = TransactionType.Credit
             };
-            AccountHolder.Balance += amt;
-            AccountHolder.Transactions.Add(transaction);
-            txnid = transaction.Id;
-            return txnid;
+            accountholder.Balance += amt;
+            accountholder.Transactions.Add(transaction);
+            return transaction.Id;
         }
 
         public string Withdraw(AccountHolder AccountHolder, double amt)
@@ -148,18 +153,16 @@ namespace BankApplication.Services
             return AccountHolder.Balance;
         }
 
-        public void ViewAllBankBranches(string Bankid)
+        public void ViewAllBankBranches(Bank bank)
         {
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == Bankid);
-            foreach(var i in bank.Branches)
+            foreach (var i in bank.Branches)
             {
                 Console.WriteLine(i.Id + "  -  " + i.Name);
             }
         }
 
-        public void ViewAllAccounts(string bankid)
-        {
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
+        public void ViewAllAccounts(Bank bank)
+        { 
             foreach (var i in bank.AccountHolders)
             {
                 Console.WriteLine(i.Id + "   -   " + i.Name+"   -   "+i.PhoneNumber+"   -   "+i.Address);
