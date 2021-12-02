@@ -397,7 +397,12 @@ namespace BankApplication
                 accountholder.Name = Utilities.Utilities.GetStringInput("Enter the Name to Update  :  ", false);
                 accountholder.PhoneNumber = Convert.ToInt32(Utilities.Utilities.GetPhoneNumber("Enter the Phone Number to Update  :  ", false));
                 accountholder.Address = Utilities.Utilities.GetStringInput("Enter the Address to Update  :  ", false);
-                accountholderservice.UpdateAccountHolder(accountholder,accountNo);
+                Status status = accountholderservice.UpdateAccountHolder(accountholder,accountNo);
+                if(!status.IsSuccess)
+                {
+                    Console.WriteLine(status.Message);
+                    this.EmployeeConsoleUpdateAccountHolder();
+                }
             }
             else
             {
@@ -536,7 +541,12 @@ namespace BankApplication
             {
                 string currencycode = Utilities.Utilities.GetStringInput("Enter the Currency Code  :  ", true);
                 double exchangerate = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the Exchange rate  :  ", true));
-                accountholderservice.AddCurrency(currencycode, exchangerate, bank);
+                Status status = accountholderservice.AddCurrency(currencycode, exchangerate, bank);
+                if(!status.IsSuccess)
+                {
+                    Console.WriteLine(status.Message);
+                    this.EmployeeConsoleAddCurrency();
+                }
             }
             else
             {
@@ -556,7 +566,12 @@ namespace BankApplication
                 bank.RTGSChargesforDifferentBank = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the charges for  RTGSChargesforDifferentBank  :  ", false));
                 bank.IMPSChargesforSameBank = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the charges for IMPSChargesforSameBank   :  ", false));
                 bank.IMPSChargesforDifferentBank = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the charges for IMPSChargesforDifferentBank  :  ", false));
-                accountholderservice.UpdateCharges(bank);
+                Status status = accountholderservice.UpdateCharges(bank);
+                if(!status.IsSuccess)
+                {
+                    Console.WriteLine(status.Message);
+                    this.EmployeeConsoleUpdateCharges();
+                }
             }
             else
             {
@@ -684,7 +699,12 @@ namespace BankApplication
                 employee.Name = Utilities.Utilities.GetStringInput("Enter the Name to Update  :  ", false);
                 employee.PhoneNumber = Convert.ToInt32(Utilities.Utilities.GetPhoneNumber("Enter the Phone Number to Update  :  ", false));
                 employee.Address = Utilities.Utilities.GetStringInput("Enter the Address to Update  :  ", false);
-                employeeservice.UpdateEmployee(employee,employeeNo);
+                Status status = employeeservice.UpdateEmployee(employee,employeeNo);
+                if(!status.IsSuccess)
+                {
+                    Console.WriteLine(status.Message);
+                    this.AdminConsoleUpdateEmployee();
+                }
             }
             else
             {
@@ -720,7 +740,12 @@ namespace BankApplication
                 accountholder.Name = Utilities.Utilities.GetStringInput("Enter the Name to Update  :  ", false);
                 accountholder.PhoneNumber = Utilities.Utilities.GetPhoneNumber("Enter the Phone Number to Update  :  ", false);
                 accountholder.Address = Utilities.Utilities.GetStringInput("Enter the Address to Update  :  ", false);
-                employeeservice.UpdateAccountHolder(accountholder,accountNo);
+                Status status = employeeservice.UpdateAccountHolder(accountholder, accountNo);
+                if(!status.IsSuccess)
+                {
+                    Console.WriteLine(status.Message);
+                    this.AdminConsoleUpdateAccountHolder();
+                }
             }
             else
             {
@@ -857,7 +882,12 @@ namespace BankApplication
             {
                 string currencycode = Utilities.Utilities.GetStringInput("Enter the Currency Code  :  ", true);
                 double exchangerate = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the Exchange rate  :  ", true));
-                employeeservice.AddCurrency(currencycode, exchangerate, bank);
+                Status status = employeeservice.AddCurrency(currencycode, exchangerate, bank);
+                if(!status.IsSuccess)
+                {
+                    Console.WriteLine(status.Message);
+                    this.AdminConsoleAddCurrency();
+                }
             }
             else
             {
@@ -894,7 +924,12 @@ namespace BankApplication
             Transaction transaction = accountholder != null ? accountholder.Transactions.Find(trans => trans.Id == transid) : null;
             if (transaction != null)
             {
-                employeeservice.revertTransaction(transid);
+                Status status = employeeservice.revertTransaction(transid);
+                if(!status.IsSuccess)
+                {
+                    Console.WriteLine(status.Message);
+                    this.AdminConsoleRevertTransaction();
+                }
             }
             else
             {
@@ -950,8 +985,8 @@ namespace BankApplication
                             this.AdminConsoleRevertTransaction();
                             break;
                         case AdminMenu.AddBranch:
-                            string bankid1 = Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true);
-                            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid1);
+                            string bankid = Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true);
+                            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
                             Branch branch = new Branch();
                             branch.Name = Utilities.Utilities.GetStringInput("Enter the Branch Name  :  ", true);
                             branch.Address = Utilities.Utilities.GetStringInput("Enter the Branch Address  :  ", true);
