@@ -6,11 +6,18 @@ namespace BankApplication.Services
 {
     public class AccountHolderService
     {
+        public BankApplicationDbContext BankAppDbctx;
+
+        public AccountHolderService()
+        {
+            BankAppDbctx = new BankApplicationDbContext();
+        }
+
         public Status UpdateAccountHolder(AccountHolder accountholder,string accountholderid)
         {
             try
             {
-                Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == accountholderid));
+                Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == accountholderid));
                 AccountHolder oldaccountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == accountholderid) : null;
                 oldaccountholder.Name = accountholder.Name == string.Empty ? oldaccountholder.Name : accountholder.Name;
                 oldaccountholder.PhoneNumber = accountholder.PhoneNumber == default(long) ? oldaccountholder.PhoneNumber : accountholder.PhoneNumber;
@@ -27,7 +34,7 @@ namespace BankApplication.Services
         {
             try
             {
-                Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == userid));
+                Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == userid));
                 AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == userid) : null;
                 if (accountholder != null)
                 {
@@ -54,7 +61,7 @@ namespace BankApplication.Services
         {
             try
             {
-                Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Transactions.Any(trans => trans.Id == transaction.Id)));
+                Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Transactions.Any(trans => trans.Id == transaction.Id)));
                 AccountHolder senderaccountholder = bank.AccountHolders.Find(AccountHolder => AccountHolder.Id == transaction.SrcAccId);
                 AccountHolder receiveraccountholder = bank.AccountHolders.Find(AccountHolder => AccountHolder.Id == transaction.DestAccId);
                 senderaccountholder.Balance += transaction.Amount;
@@ -86,7 +93,7 @@ namespace BankApplication.Services
         {
             try
             {
-                Bank oldbank = BankDatabase.Banks.Find(bank => bank.Id == bank.Id);
+                Bank oldbank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Id == bank.Id);
                 bank.RTGSChargesforSameBank = bank.RTGSChargesforSameBank == default(int) ? oldbank.RTGSChargesforSameBank : bank.RTGSChargesforSameBank;
                 bank.RTGSChargesforDifferentBank = bank.RTGSChargesforDifferentBank == default(int) ? oldbank.RTGSChargesforDifferentBank : bank.RTGSChargesforDifferentBank;
                 bank.IMPSChargesforSameBank = bank.IMPSChargesforSameBank == default(int) ? oldbank.IMPSChargesforSameBank : bank.IMPSChargesforSameBank;

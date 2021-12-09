@@ -6,6 +6,13 @@ namespace BankApplication.Services
 {
     public class BankService
     {
+        public BankApplicationDbContext BankAppDbctx;
+
+        public BankService()
+        {
+            BankAppDbctx = new BankApplicationDbContext();
+        }
+
         public Status SetUpBank(Branch branch,Bank bank, Employee admin)
         {
             Status status = new Status();
@@ -20,7 +27,7 @@ namespace BankApplication.Services
                 admin.Role = "Admin";
                 bank.Employees.Add(admin);
 
-                BankDatabase.Banks.Add(bank);
+                BankAppDbctx.Banks.Add(bank);
                 bank.Branches.Add(branch);
                 status.IsSuccess = true;
             }
@@ -136,14 +143,14 @@ namespace BankApplication.Services
 
         public AccountHolder GetAccountHolder(string accountid)
         {
-            Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == accountid));
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == accountid));
             AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == accountid) : null;
             return accountholder;
         }
 
         public Employee GetEmployee(string employeeid,string bankid)
         {
-            Bank bank = BankDatabase.Banks.Find(b => b.Employees.Any(employee => employee.Id == employeeid && employee.Type == UserType.Employee));
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(b => b.Employees.Any(employee => employee.Id == employeeid && employee.Type == UserType.Employee));
             Employee employee = bank != null ? bank.Employees.Find(employee => employee.Id == employeeid && employee.Type == UserType.Employee) : null;
             return employee;
         }
