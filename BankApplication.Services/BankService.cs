@@ -153,31 +153,6 @@ namespace BankApplication.Services
             return AccountHolder.Balance;
         }
 
-        public void ViewAllBankBranches(Bank bank)
-        {
-            foreach (var i in bank.Branches)
-            {
-                Console.WriteLine(i.Id + "  -  " + i.Name);
-            }
-        }
-
-        public void ViewAllAccounts(Bank bank)
-        { 
-            foreach (var i in bank.AccountHolders)
-            {
-                Console.WriteLine(i.Id + "   -   " + i.Name+"   -   "+i.PhoneNumber+"   -   "+i.Address);
-            }
-        }
-
-        public void ViewAllEmployees(string bankid)
-        {
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
-            foreach(var i in bank.Employees)
-            {
-                Console.WriteLine(i.Id + "   -   " + i.Name + "   -   " + i.PhoneNumber + "   -   " + i.Address);
-            }
-        }
-
         public string EmployeeDeposit(AccountHolder AccountHolder, double amt)
         {
             Transaction transaction = new Transaction()

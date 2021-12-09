@@ -47,6 +47,31 @@ namespace BankApplication
             this.MainMenu();
         }
 
+        public void ViewAllBankBranches(Bank bank)
+        {
+            foreach (var i in bank.Branches)
+            {
+                Console.WriteLine(i.Id + "  -  " + i.Name);
+            }
+        }
+
+        public void ViewAllAccounts(Bank bank)
+        {
+            foreach (var i in bank.AccountHolders)
+            {
+                Console.WriteLine(i.Id + "   -   " + i.Name + "   -   " + i.PhoneNumber + "   -   " + i.Address);
+            }
+        }
+
+        public void ViewAllEmployees(string bankid)
+        {
+            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
+            foreach (var i in bank.Employees)
+            {
+                Console.WriteLine(i.Id + "   -   " + i.Name + "   -   " + i.PhoneNumber + "   -   " + i.Address);
+            }
+        }
+
         public void BankServiceViewAllBankBranches()
         {
             BankService bankservice = new BankService();
@@ -55,7 +80,7 @@ namespace BankApplication
             if(bank != null)
             {
                 Console.WriteLine("Our Branches are   :   ");
-                bankservice.ViewAllBankBranches(bank);
+                this.ViewAllBankBranches(bank);
             }
             else
             {
@@ -71,7 +96,7 @@ namespace BankApplication
             if (bank != null)
             {
                 Console.WriteLine("Our Branches are   :   ");
-                bankservice.ViewAllAccounts(bank);
+                this.ViewAllAccounts(bank);
             }
             else
             {
@@ -388,7 +413,7 @@ namespace BankApplication
             BankService bankservice = new BankService();
             string bankid = Utilities.Utilities.GetStringInput("Enter the Bank Id  :  ", true);
             Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
-            bankservice.ViewAllAccounts(bank);
+            this.ViewAllAccounts(bank);
             string accountNo = Utilities.Utilities.GetStringInput("Enter the account number  :  ", true);
             //AccountHolder AccountHolder = bankservice.GetAccountHolder(accountNo);
             AccountHolder accountholder = new AccountHolder();
@@ -691,7 +716,7 @@ namespace BankApplication
             EmployeeService employeeservice = new EmployeeService();
             BankService bankservice = new BankService();
             string bankid = Utilities.Utilities.GetStringInput("Enter the Bank Id  :  ", true);
-            bankservice.ViewAllEmployees(bankid);
+            this.ViewAllEmployees(bankid);
             string employeeNo = Utilities.Utilities.GetStringInput("Enter the account number  :  ", true);
             Employee employee = bankservice.GetEmployee(employeeNo, bankid);
             if (employee != null)
@@ -731,7 +756,7 @@ namespace BankApplication
             BankService bankservice = new BankService();
             string bankid = Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true);
             Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
-            bankservice.ViewAllAccounts(bank);
+            this.ViewAllAccounts(bank);
             string accountNo = Utilities.Utilities.GetStringInput("Enter the account number  :  ", true);
             //AccountHolder AccountHolder = bankservice.GetAccountHolder(accountNo);
             AccountHolder accountholder = new AccountHolder();
