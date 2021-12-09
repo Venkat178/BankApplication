@@ -1,8 +1,4 @@
-﻿using System;
-using BankApplication.Models;
-using BankApplication.Services;
-
-namespace BankApplication
+﻿namespace BankApplication
 {
     class Program
     {
