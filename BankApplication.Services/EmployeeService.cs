@@ -79,20 +79,6 @@ namespace BankApplication.Services
             return new Status() { IsSuccess = false, Message = "Error occured while deleting account holder.Try again" };
         }
 
-        public void ViewTransactions(string userid)
-        {
-            Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == userid));
-            AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == userid) : null;
-            if(accountholder != null)
-            {
-                foreach (var i in accountholder.Transactions)
-                {
-                    Console.WriteLine(i.SrcAccId + " to " + i.DestAccId + " of " + i.Amount);
-                }
-            }
-            
-        }
-
         public Status revertTransaction(string transId)
         {
             try

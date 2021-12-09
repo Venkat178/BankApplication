@@ -72,6 +72,20 @@ namespace BankApplication
             }
         }
 
+        public void ViewTransactions(string userid)
+        {
+            Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == userid));
+            AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == userid) : null;
+            if (accountholder != null)
+            {
+                foreach (var i in accountholder.Transactions)
+                {
+                    Console.WriteLine(i.SrcAccId + " to " + i.DestAccId + " of " + i.Amount);
+                }
+            }
+
+        }
+
         public void BankServiceViewAllBankBranches()
         {
             BankService bankservice = new BankService();
