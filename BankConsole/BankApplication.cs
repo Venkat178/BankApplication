@@ -9,10 +9,12 @@ namespace BankApplication
     {
         BankService BankService;
         User LoggedInUser;
+        BankApplicationDbContext BankAppDbctx;
 
         public void Initialize()
         {
             this.BankService = new BankService();
+            BankAppDbctx = new BankApplicationDbContext();
             this.MainMenu();
         }
 
@@ -65,10 +67,18 @@ namespace BankApplication
 
         public void ViewAllEmployees(string bankid)
         {
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Id == bankid);
             foreach (var i in bank.Employees)
             {
                 Console.WriteLine(i.Id + "   -   " + i.Name + "   -   " + i.PhoneNumber + "   -   " + i.Address);
+            }
+        }
+
+        public void ViewTransactions(AccountHolder AccountHolder)
+        {
+            foreach (var i in AccountHolder.Transactions)
+            {
+                Console.WriteLine(i.SrcAccId + " to " + i.DestAccId + " of " + i.Amount);
             }
         }
 
@@ -76,7 +86,7 @@ namespace BankApplication
         {
             BankService bankservice = new BankService();
             string bankid = Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Id == bankid);
             if(bank != null)
             {
                 Console.WriteLine("Our Branches are   :   ");
@@ -92,7 +102,7 @@ namespace BankApplication
         {
             BankService bankservice = new BankService();
             string bankid = Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Id == bankid);
             if (bank != null)
             {
                 Console.WriteLine("Our Branches are   :   ");
@@ -161,9 +171,9 @@ namespace BankApplication
             string password = Utilities.Utilities.GetStringInput("Enter password :  ", true);
             try
             {
-                if (BankDatabase.Banks.Any(_ => _.Employees.Any(emp => emp.EmployeeId.ToLower() == username.ToLower() && emp.Password == password && emp.Type == UserType.Admin)))
+                if (BankAppDbctx.Banks.Any(_ => _.Employees.Any(emp => emp.EmployeeId.ToLower() == username.ToLower() && emp.Password == password && emp.Type == UserType.Admin)))
                 {
-                    Bank bank = BankDatabase.Banks.Find(_ => _.Employees.Any(emp => emp.EmployeeId.ToLower() == username.ToLower() && emp.Password == password && emp.Type == UserType.Admin));
+                    Bank bank = BankAppDbctx.Banks.FirstOrDefault(_ => _.Employees.Any(emp => emp.EmployeeId.ToLower() == username.ToLower() && emp.Password == password && emp.Type == UserType.Admin));
                     this.LoggedInUser = bank != null ? (Employee)bank.Employees.Find(emp => emp.EmployeeId.ToLower() == username.ToLower() && emp.Password == password && emp.Type == UserType.Admin) : null;
                     Console.WriteLine("Login Successfully");
                     Employee LoggedInUser = (Employee)this.LoggedInUser;
@@ -171,8 +181,8 @@ namespace BankApplication
                     return;
                 }
 
-                if (BankDatabase.Banks.Any(_ => _.Employees.Any(emp => emp.EmployeeId.ToLower() == username.ToLower() && emp.Password == password && emp.Type == UserType.Employee))){
-                    Bank bank = BankDatabase.Banks.Find(_ => _.Employees.Any(emp => emp.EmployeeId.ToLower() == username.ToLower() && emp.Password == password && emp.Type == UserType.Employee));
+                if (BankAppDbctx.Banks.Any(_ => _.Employees.Any(emp => emp.EmployeeId.ToLower() == username.ToLower() && emp.Password == password && emp.Type == UserType.Employee))){
+                    Bank bank = BankAppDbctx.Banks.FirstOrDefault(_ => _.Employees.Any(emp => emp.EmployeeId.ToLower() == username.ToLower() && emp.Password == password && emp.Type == UserType.Employee));
                     this.LoggedInUser = bank != null ? (Employee)bank.Employees.Find(emp => emp.EmployeeId.ToLower() == username.ToLower() && emp.Password == password && emp.Type == UserType.Employee) : null;
                     //this.LoggedInUser = BankDatabase.Banks.FindAll(_ => _.Employees.Any(emp => emp.EmployeeId.ToLower() == username.ToLower() && emp.Password == password && emp.Type == UserType.Employee)).Select(_ => _.Employees).Cast<User>().ToList().FirstOrDefault();
                     Console.WriteLine("Login Successfully");
@@ -181,8 +191,8 @@ namespace BankApplication
                     return;
                 }
 
-                if (BankDatabase.Banks.Any(_ => _.AccountHolders.Any(emp => emp.Id.ToLower() == username.ToLower() && emp.Password == password))){
-                    Bank bank = BankDatabase.Banks.Find(_ => _.AccountHolders.Any(emp => emp.Id.ToLower() == username.ToLower() && emp.Password == password ));
+                if (BankAppDbctx.Banks.Any(_ => _.AccountHolders.Any(emp => emp.Id.ToLower() == username.ToLower() && emp.Password == password))){
+                    Bank bank = BankAppDbctx.Banks.FirstOrDefault(_ => _.AccountHolders.Any(emp => emp.Id.ToLower() == username.ToLower() && emp.Password == password ));
                     this.LoggedInUser = bank != null ? (AccountHolder)bank.AccountHolders.Find(emp => emp.Id.ToLower() == username.ToLower() && emp.Password == password ) : null;
                     //this.LoggedInUser = BankDatabase.Banks.FindAll(_ => _.AccountHolders.Any(emp => emp.Id.ToLower() == username.ToLower() && emp.Password == password)).Select(_ => _.AccountHolders).Cast<User>().ToList().FirstOrDefault();
                     Console.WriteLine("Login Successfully");
@@ -212,7 +222,7 @@ namespace BankApplication
                 employee.Name = Utilities.Utilities.GetStringInput("Enter the Employee Name  :  ", true);
                 this.BankServiceViewAllBankBranches();
                 employee.BranchId = Utilities.Utilities.GetStringInput("Enter the Branch Id from above  :  ", true);
-                Bank bank = BankDatabase.Banks.Find(bank => bank.Branches.Any(branch => branch.Id == employee.BranchId));
+                Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Branches.Any(branch => branch.Id == employee.BranchId));
                 if (bank == null)
                 {
                     Console.WriteLine("No bank found");
@@ -254,7 +264,7 @@ namespace BankApplication
                 this.BankServiceViewAllBankBranches();
                 
                 accountholder.BranchId = Utilities.Utilities.GetStringInput("Enter the Branch Id from above  :  ", true);
-                Bank bank = BankDatabase.Banks.Find(bank => bank.Branches.Any(branch => branch.Id == accountholder.BranchId));
+                Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Branches.Any(branch => branch.Id == accountholder.BranchId));
                 if (bank == null)
                 {
                     Console.WriteLine("No bank found");
@@ -305,7 +315,7 @@ namespace BankApplication
             BankService bankservice = new BankService();
             Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.Utilities.GetStringInput("What type of transfer you want IMPS/RTGS", true), true);
             string destuserId = Utilities.Utilities.GetStringInput("Enter the Reciever's Id  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == destuserId));
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == destuserId));
             AccountHolder recevieraccountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == destuserId) : null;
             if (recevieraccountholder != null)
             {
@@ -412,7 +422,7 @@ namespace BankApplication
             AccountHolderService accountholderservice = new AccountHolderService();
             BankService bankservice = new BankService();
             string bankid = Utilities.Utilities.GetStringInput("Enter the Bank Id  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Id == bankid);
             this.ViewAllAccounts(bank);
             string accountNo = Utilities.Utilities.GetStringInput("Enter the account number  :  ", true);
             //AccountHolder AccountHolder = bankservice.GetAccountHolder(accountNo);
@@ -453,7 +463,7 @@ namespace BankApplication
             BankService bankservice = new BankService();
             AccountHolderService accountholderservice = new AccountHolderService();
             string userid = Utilities.Utilities.GetStringInput("Enter the userid  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == userid));
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == userid));
             AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == userid) : null;
             if (accountholder != null)
             {
@@ -473,7 +483,7 @@ namespace BankApplication
         {
             BankService bankservice = new BankService();
             string userid = Utilities.Utilities.GetStringInput("Enter the userid  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == userid));
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == userid));
             AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == userid) : null;
             if (accountholder != null)
             {
@@ -493,10 +503,10 @@ namespace BankApplication
             BankService bankservice = new BankService();
             Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.Utilities.GetStringInput("What type of transfer you want IMPS/RTGS  :  ", true), true);
             string srcid = Utilities.Utilities.GetStringInput("Enter the source user id  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == srcid));
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == srcid));
             AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == srcid) : null;
             string destuserid = Utilities.Utilities.GetStringInput("Enter the destination user id  :  ", true);
-            Bank bank1 = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == destuserid));
+            Bank bank1 = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == destuserid));
             AccountHolder recevierAccountHolder = bank1 != null ? bank1.AccountHolders.Find(account => account.Id == destuserid) : null;
             if (accountholder != null && recevierAccountHolder != null)
             {
@@ -561,7 +571,7 @@ namespace BankApplication
         {
             AccountHolderService accountholderservice = new AccountHolderService();
             string bankid = Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Id == bankid);
             if (bank != null)
             {
                 string currencycode = Utilities.Utilities.GetStringInput("Enter the Currency Code  :  ", true);
@@ -584,7 +594,7 @@ namespace BankApplication
         {
             AccountHolderService accountholderservice = new AccountHolderService();
             string bankid = Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Id == bankid);
             if (bank != null)
             {
                 bank.RTGSChargesforSameBank = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the charges for RTGSChargesforSameBank  :  ", false));
@@ -611,7 +621,7 @@ namespace BankApplication
             {
                 AccountHolderService accountholderservice = new AccountHolderService();
                 string transid = Utilities.Utilities.GetStringInput("Enter the TransactionID  :  ", true);
-                Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Transactions.Any(trans => trans.Id == transid)));
+                Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Transactions.Any(trans => trans.Id == transid)));
                 AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Transactions.Any(trans => trans.Id == transid)) : null;
                 Transaction transaction = accountholder != null ? accountholder.Transactions.Find(trans => trans.Id == transid) : null;
                 if (transaction != null)
@@ -634,12 +644,11 @@ namespace BankApplication
 
         public void EmployeeConsoleViewTransactions()
         {
-            AccountHolderService accountholderservice = new AccountHolderService();
             string userid = Utilities.Utilities.GetStringInput("Enter the userid  :  ", true);
             AccountHolder AccountHolder = new AccountHolder();
             if (AccountHolder != null)
             {
-                accountholderservice.ViewTransactions(AccountHolder);
+                this.ViewTransactions(AccountHolder);
             }
             else
             {
@@ -755,7 +764,7 @@ namespace BankApplication
             EmployeeService employeeservice = new EmployeeService();
             BankService bankservice = new BankService();
             string bankid = Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Id == bankid);
             this.ViewAllAccounts(bank);
             string accountNo = Utilities.Utilities.GetStringInput("Enter the account number  :  ", true);
             //AccountHolder AccountHolder = bankservice.GetAccountHolder(accountNo);
@@ -795,7 +804,7 @@ namespace BankApplication
         {
             BankService bankservice = new BankService();
             string userid = Utilities.Utilities.GetStringInput("Enter the userid  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == userid));
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == userid));
             AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == userid) : null;
             if (accountholder != null)
             {
@@ -816,7 +825,7 @@ namespace BankApplication
             BankService bankservice = new BankService();
             EmployeeService employeeservice = new EmployeeService();
             string userid = Utilities.Utilities.GetStringInput("Enter the userid  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == userid));
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == userid));
             AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == userid) : null;
             if (accountholder != null)
             {
@@ -836,10 +845,10 @@ namespace BankApplication
             BankService bankservice = new BankService();
             Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.Utilities.GetStringInput("What type of transfer you want IMPS/RTGS", true), true);
             string srcid = Utilities.Utilities.GetStringInput("Enter the source user id  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == srcid));
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == srcid));
             AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == srcid) : null;
             string destuserid = Utilities.Utilities.GetStringInput("Enter the destination user id  :  ", true);
-            Bank bank1 = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Id == destuserid));
+            Bank bank1 = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == destuserid));
             AccountHolder recevierAccountHolder = bank != null ? bank.AccountHolders.Find(account => account.Id == destuserid) : null;
             if (accountholder != null && recevierAccountHolder != null)
             {
@@ -902,7 +911,7 @@ namespace BankApplication
         {
             EmployeeService employeeservice = new EmployeeService();
             string bankid = Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Id == bankid);
             if (bank != null)
             {
                 string currencycode = Utilities.Utilities.GetStringInput("Enter the Currency Code  :  ", true);
@@ -925,7 +934,7 @@ namespace BankApplication
         {
             EmployeeService employeeservice = new EmployeeService();
             string branchid = Utilities.Utilities.GetStringInput("Enter the Branch id to Delete  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.Employees.Any(branch => branch.Id == branchid));
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Employees.Any(branch => branch.Id == branchid));
             Branch branch = bank != null ? bank.Branches.Find(branch => branch.Id == branchid) : null;
             if (branch != null)
             {
@@ -944,7 +953,7 @@ namespace BankApplication
         {
             EmployeeService employeeservice = new EmployeeService();
             string transid = Utilities.Utilities.GetStringInput("Enter the TransactionID  :  ", true);
-            Bank bank = BankDatabase.Banks.Find(bank => bank.AccountHolders.Any(account => account.Transactions.Any(trans => trans.Id == transid)));
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Transactions.Any(trans => trans.Id == transid)));
             AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Transactions.Any(trans => trans.Id == transid)) : null;
             Transaction transaction = accountholder != null ? accountholder.Transactions.Find(trans => trans.Id == transid) : null;
             if (transaction != null)
@@ -1011,7 +1020,7 @@ namespace BankApplication
                             break;
                         case AdminMenu.AddBranch:
                             string bankid = Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true);
-                            Bank bank = BankDatabase.Banks.Find(bank => bank.Id == bankid);
+                            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Id == bankid);
                             Branch branch = new Branch();
                             branch.Name = Utilities.Utilities.GetStringInput("Enter the Branch Name  :  ", true);
                             branch.Address = Utilities.Utilities.GetStringInput("Enter the Branch Address  :  ", true);

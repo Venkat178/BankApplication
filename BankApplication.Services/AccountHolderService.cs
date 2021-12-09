@@ -49,14 +49,6 @@ namespace BankApplication.Services
             return new Status() { IsSuccess = false, Message = "Error occured while deleting.Try again" };
         }
 
-        public void ViewTransactions(AccountHolder AccountHolder)
-        {
-            foreach(var i in AccountHolder.Transactions)
-            {
-                Console.WriteLine(i.SrcAccId + " to " + i.DestAccId + " of " + i.Amount);
-            }
-        }
-
         public Status revertTransaction(Transaction transaction)
         {
             try

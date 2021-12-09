@@ -11,5 +11,10 @@ namespace BankApplication.Models
             optionsBuilder.UseSqlServer(connectionString: @"Data Source=VENKAT-ELON\SQLEXPRESS;Initial Catalog=BankApplicationDB;Integrated Security=True");
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Bank>().HasKey(v => v.Id);
+        }
+
     }
 }
