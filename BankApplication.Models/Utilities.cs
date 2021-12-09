@@ -31,7 +31,7 @@ namespace BankApplication.Utilities
             {
                 Console.Write(helpText);
                 input = Convert.ToInt64(Console.ReadLine());
-                if (isRequired && string.IsNullOrEmpty(input.ToString()) && input > 9999999999)
+                if (isRequired && input > 9999999999)
                 {
                     input = GetPhoneNumber(helpText, isRequired);
                 }
@@ -39,7 +39,7 @@ namespace BankApplication.Utilities
             catch (Exception)
             {
                 Console.WriteLine("Phone number is not valid");
-                GetStringInput(helpText, isRequired);
+                GetPhoneNumber(helpText, isRequired);
             }
             return input;
         }

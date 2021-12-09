@@ -1,5 +1,4 @@
-﻿
-namespace BankApplication.Models
+﻿namespace BankApplication.Models
 {
     public class CurrencyCode
     {

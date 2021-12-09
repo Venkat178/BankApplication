@@ -24,7 +24,7 @@ namespace BankApplication.Services
                     oldemployee.Name = employee.Name == string.Empty ? oldemployee.Name : employee.Name;
                     oldemployee.PhoneNumber = employee.PhoneNumber == default(long) ? oldemployee.PhoneNumber : employee.PhoneNumber;
                     oldemployee.Address = employee.Address == string.Empty ? oldemployee.Address : employee.Address;
-                    return new Status() { IsSuccess = true, Message = "Succefully updated" };
+                    return new Status() { IsSuccess = true, Message = "Successfully updated" };
                 }
             }
             catch (Exception) 
@@ -43,7 +43,7 @@ namespace BankApplication.Services
                 if (employee != null)
                 {
                     bank.Employees.Remove(employee);
-                    return new Status() { IsSuccess = true, Message = "Succefully deleted" };
+                    return new Status() { IsSuccess = true, Message = "Successfully deleted" };
                 }
             }
             catch (Exception) { }
@@ -59,7 +59,7 @@ namespace BankApplication.Services
                 oldaccountholder.Name = AccountHolder.Name == string.Empty ? oldaccountholder.Name : AccountHolder.Name;
                 oldaccountholder.PhoneNumber = AccountHolder.PhoneNumber == default(long) ? oldaccountholder.PhoneNumber : AccountHolder.PhoneNumber;
                 oldaccountholder.Address = AccountHolder.Address == string.Empty ? oldaccountholder.Address : AccountHolder.Address;
-                return new Status() { IsSuccess = true, Message = "Succefully updated" };
+                return new Status() { IsSuccess = true, Message = "Successfully updated" };
             }
             catch (Exception)
             {
@@ -76,7 +76,7 @@ namespace BankApplication.Services
                 if (accountholder != null)
                 {
                     bank.AccountHolders.Remove(accountholder);
-                    return new Status() { IsSuccess = true, Message = "Succefully deleted" };
+                    return new Status() { IsSuccess = true, Message = "Successfully deleted" };
                 }
             }
             catch (Exception)
@@ -84,20 +84,6 @@ namespace BankApplication.Services
                 return new Status() { IsSuccess = false, Message = "Error occured while deleting account holder.Try again" };
             }
             return new Status() { IsSuccess = false, Message = "Error occured while deleting account holder.Try again" };
-        }
-
-        public void ViewTransactions(string userid)
-        {
-            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == userid));
-            AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == userid) : null;
-            if(accountholder != null)
-            {
-                foreach (var i in accountholder.Transactions)
-                {
-                    Console.WriteLine(i.SrcAccId + " to " + i.DestAccId + " of " + i.Amount);
-                }
-            }
-            
         }
 
         public Status revertTransaction(string transId)
