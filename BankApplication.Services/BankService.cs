@@ -18,21 +18,22 @@ namespace BankApplication.Services
             Status status = new Status();
             try
             {
-                bank.Id = bank.Name + DateTime.Now.ToString("yyyyMMddHHmmss");
-                Console.WriteLine(bank.Id);
-                branch.Id = branch.Name + DateTime.Now.ToString("yyyyMMddHHmmss");
                 branch.IsMainBranch = true;
 
+                admin.BranchId = bank.Id;
                 admin.EmployeeId = admin.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
                 admin.Role = "Admin";
+                
                 bank.Employees.Add(admin);
 
                 BankAppDbctx.Banks.Add(bank);
                 bank.Branches.Add(branch);
+                BankAppDbctx.SaveChanges();
                 status.IsSuccess = true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 status.IsSuccess = false;
                 status.Message = "Unable to create a bank...!";
             }
@@ -150,8 +151,8 @@ namespace BankApplication.Services
 
         public Employee GetEmployee(string employeeid,string bankid)
         {
-            Bank bank = BankAppDbctx.Banks.FirstOrDefault(b => b.Employees.Any(employee => employee.Id == employeeid && employee.Type == UserType.Employee));
-            Employee employee = bank != null ? bank.Employees.Find(employee => employee.Id == employeeid && employee.Type == UserType.Employee) : null;
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(b => b.Employees.Any(employee => employee.EmployeeId == employeeid && employee.Type == UserType.Employee));
+            Employee employee = bank != null ? bank.Employees.Find(employee => employee.EmployeeId == employeeid && employee.Type == UserType.Employee) : null;
             return employee;
         }
 

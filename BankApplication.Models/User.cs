@@ -12,5 +12,6 @@ namespace BankApplication.Models
         public string BranchId { get; set; }
         public string Password { get; set; }
         public UserType Type { get; set; }
+        public Bank Bank { get; set; }
     }
 }

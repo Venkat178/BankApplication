@@ -22,6 +22,7 @@ namespace BankApplication.Services
                 oldaccountholder.Name = accountholder.Name == string.Empty ? oldaccountholder.Name : accountholder.Name;
                 oldaccountholder.PhoneNumber = accountholder.PhoneNumber == default(long) ? oldaccountholder.PhoneNumber : accountholder.PhoneNumber;
                 oldaccountholder.Address = accountholder.Address == string.Empty ? oldaccountholder.Address : accountholder.Address;
+                BankAppDbctx.SaveChanges();
                 return new Status() { IsSuccess = true, Message = "Successfully updated" };
             }
             catch(Exception)
@@ -39,6 +40,7 @@ namespace BankApplication.Services
                 if (accountholder != null)
                 {
                     bank.AccountHolders.Remove(accountholder);
+                    BankAppDbctx.SaveChanges();
                     return new Status() { IsSuccess = true, Message = "Successfully deleted" };
                 }
             }
@@ -60,6 +62,7 @@ namespace BankApplication.Services
                 receiveraccountholder.Balance -= transaction.Amount;
                 senderaccountholder.Transactions.Add(transaction);
                 receiveraccountholder.Transactions.Add(transaction);
+                BankAppDbctx.SaveChanges();
                 return new Status() { IsSuccess = true, Message = "Succefully transfered" };
             }
             catch(Exception)
@@ -73,6 +76,7 @@ namespace BankApplication.Services
             try
             {
                 bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "currencyCode", ExchangeRate = exchangeRate ,IsDefault = false});
+                BankAppDbctx.SaveChanges();
                 return new Status() { IsSuccess = true, Message = "Successfully added" };
             }
             catch(Exception)
@@ -90,6 +94,7 @@ namespace BankApplication.Services
                 bank.RTGSChargesforDifferentBank = bank.RTGSChargesforDifferentBank == default(int) ? oldbank.RTGSChargesforDifferentBank : bank.RTGSChargesforDifferentBank;
                 bank.IMPSChargesforSameBank = bank.IMPSChargesforSameBank == default(int) ? oldbank.IMPSChargesforSameBank : bank.IMPSChargesforSameBank;
                 bank.IMPSChargesforDifferentBank = bank.IMPSChargesforDifferentBank == default(int) ? oldbank.IMPSChargesforDifferentBank : bank.IMPSChargesforDifferentBank;
+                BankAppDbctx.SaveChanges();
                 return new Status() { IsSuccess = true, Message = "Successfully updated" };
             }
             catch(Exception)

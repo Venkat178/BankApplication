@@ -14,7 +14,7 @@ namespace BankApplication
         public void Initialize()
         {
             this.BankService = new BankService();
-            BankAppDbctx = new BankApplicationDbContext();
+            this.BankAppDbctx = new BankApplicationDbContext();
             this.MainMenu();
         }
 
@@ -70,7 +70,7 @@ namespace BankApplication
             Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Id == bankid);
             foreach (var i in bank.Employees)
             {
-                Console.WriteLine(i.Id + "   -   " + i.Name + "   -   " + i.PhoneNumber + "   -   " + i.Address);
+                Console.WriteLine(i.EmployeeId + "   -   " + i.Name + "   -   " + i.PhoneNumber + "   -   " + i.Address);
             }
         }
 
@@ -134,7 +134,7 @@ namespace BankApplication
         {
             Bank bank = new Bank()
             {
-                CurrencyCodes = new System.Collections.Generic.List<CurrencyCode>() { new CurrencyCode() { Id = 1, Code = "INR", ExchangeRate = 1, IsDefault = true } },
+                CurrencyCodes = new System.Collections.Generic.List<CurrencyCode>() { new CurrencyCode() {  Code = "INR", ExchangeRate = 1, IsDefault = true } },
                 IMPSChargesforSameBank = 5,
                 RTGSChargesforSameBank = 0,
                 IMPSChargesforDifferentBank = 6,
@@ -250,8 +250,8 @@ namespace BankApplication
                     Console.WriteLine("Password does not matched! Please try Again");
                 }
                 employee.Password = password;
-                employee.Id = bankservice.EmployeeRegister(employee, bank);
-                if(employee.Id == null)
+                employee.EmployeeId = bankservice.EmployeeRegister(employee, bank);
+                if(employee.EmployeeId == null)
                 {
                     Console.WriteLine("Name should not be short");
                     this.EmployeeRegistration();
@@ -262,7 +262,7 @@ namespace BankApplication
                 Console.WriteLine("Unable to Register...! Try again");
                 this.EmployeeRegistration();
             }
-            return employee.Id;
+            return employee.EmployeeId;
         }
 
 
@@ -948,7 +948,7 @@ namespace BankApplication
         {
             EmployeeService employeeservice = new EmployeeService();
             string branchid = Utilities.Utilities.GetStringInput("Enter the Branch id to Delete  :  ", true);
-            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Employees.Any(branch => branch.Id == branchid));
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Branches.Any(branch => branch.Id == branchid));
             Branch branch = bank != null ? bank.Branches.Find(branch => branch.Id == branchid) : null;
             if (branch != null)
             {

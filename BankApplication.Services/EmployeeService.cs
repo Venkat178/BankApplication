@@ -17,13 +17,14 @@ namespace BankApplication.Services
         {
             try
             {
-                Bank bank = BankAppDbctx.Banks.FirstOrDefault(b => b.Employees.Any(employee => employee.Id == employeeid));
-                var oldemployee = bank != null ? bank.Employees.Find(employee => employee.Id == employeeid) : null;
+                Bank bank = BankAppDbctx.Banks.FirstOrDefault(b => b.Employees.Any(employee => employee.EmployeeId == employeeid));
+                var oldemployee = bank != null ? bank.Employees.Find(employee => employee.EmployeeId == employeeid) : null;
                 if (oldemployee != null)
                 {
                     oldemployee.Name = employee.Name == string.Empty ? oldemployee.Name : employee.Name;
                     oldemployee.PhoneNumber = employee.PhoneNumber == default(long) ? oldemployee.PhoneNumber : employee.PhoneNumber;
                     oldemployee.Address = employee.Address == string.Empty ? oldemployee.Address : employee.Address;
+                    BankAppDbctx.SaveChanges();
                     return new Status() { IsSuccess = true, Message = "Successfully updated" };
                 }
             }
@@ -38,11 +39,12 @@ namespace BankApplication.Services
         {
             try
             {
-                Bank bank = BankAppDbctx.Banks.FirstOrDefault(b => b.Employees.Any(employee => employee.Id == employeeid));
-                Employee employee = bank != null ? bank.Employees.Find(employee => employee.Id == employeeid) : null;
+                Bank bank = BankAppDbctx.Banks.FirstOrDefault(b => b.Employees.Any(employee => employee.EmployeeId == employeeid));
+                Employee employee = bank != null ? bank.Employees.Find(employee => employee.EmployeeId == employeeid) : null;
                 if (employee != null)
                 {
                     bank.Employees.Remove(employee);
+                    BankAppDbctx.SaveChanges();
                     return new Status() { IsSuccess = true, Message = "Successfully deleted" };
                 }
             }
@@ -59,6 +61,7 @@ namespace BankApplication.Services
                 oldaccountholder.Name = AccountHolder.Name == string.Empty ? oldaccountholder.Name : AccountHolder.Name;
                 oldaccountholder.PhoneNumber = AccountHolder.PhoneNumber == default(long) ? oldaccountholder.PhoneNumber : AccountHolder.PhoneNumber;
                 oldaccountholder.Address = AccountHolder.Address == string.Empty ? oldaccountholder.Address : AccountHolder.Address;
+                BankAppDbctx.SaveChanges();
                 return new Status() { IsSuccess = true, Message = "Successfully updated" };
             }
             catch (Exception)
@@ -76,6 +79,7 @@ namespace BankApplication.Services
                 if (accountholder != null)
                 {
                     bank.AccountHolders.Remove(accountholder);
+                    BankAppDbctx.SaveChanges();
                     return new Status() { IsSuccess = true, Message = "Successfully deleted" };
                 }
             }
@@ -101,6 +105,7 @@ namespace BankApplication.Services
                     receiverAccountHolder.Balance -= transaction.Amount;
                     senderAccountHolder.Transactions.Add(transaction);
                     receiverAccountHolder.Transactions.Add(transaction);
+                    BankAppDbctx.SaveChanges();
                     return new Status() { IsSuccess = true, Message = "Successfully transfered" };
                 }
             }
@@ -117,6 +122,7 @@ namespace BankApplication.Services
             {
                 branch.Id = bank.Name + DateTime.Now.ToString("yyyyMMddHHmmss");
                 bank.Branches.Add(branch);
+                BankAppDbctx.SaveChanges();
                 return new Status() { IsSuccess = true, Message = "Successfully Added Branch" };
             }
             catch(Exception)
@@ -132,6 +138,7 @@ namespace BankApplication.Services
                 if (branch != null)
                 {
                     bank.Branches.Remove(branch);
+                    BankAppDbctx.SaveChanges();
                     return new Status() { IsSuccess = true, Message = "Successfully deleted" };
                 }
             }
@@ -147,6 +154,7 @@ namespace BankApplication.Services
             try
             {
                 bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "currencyCode", ExchangeRate = exchangeRate ,IsDefault = false });
+                BankAppDbctx.SaveChanges();
                 return new Status() { IsSuccess = true, Message = "Successfully currency added" };
             }
             catch(Exception)
@@ -165,6 +173,7 @@ namespace BankApplication.Services
                 bank.RTGSChargesforDifferentBank = bank.RTGSChargesforDifferentBank == default(int) ? oldbank.RTGSChargesforDifferentBank : bank.RTGSChargesforDifferentBank;
                 bank.IMPSChargesforSameBank = bank.IMPSChargesforSameBank == default(int) ? oldbank.IMPSChargesforSameBank : bank.IMPSChargesforSameBank;
                 bank.IMPSChargesforDifferentBank = bank.IMPSChargesforDifferentBank == default(int) ? oldbank.IMPSChargesforDifferentBank : bank.IMPSChargesforDifferentBank;
+                BankAppDbctx.SaveChanges();
                 return true;
             }
             catch (Exception)

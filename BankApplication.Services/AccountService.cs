@@ -16,8 +16,8 @@ namespace BankApplication.Services
         public Employee AdminLogin(string employeeid, string password)
         {
             Employee user = null;
-            Bank bank = BankAppDbctx.Banks.FirstOrDefault(b => b.Employees.Any(employee=> employee.Id == employeeid && employee.Type == UserType.Admin));
-            Employee admin = bank != null ? bank.Employees.Find(employee => employee.Id == employeeid) : null;
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(b => b.Employees.Any(employee=> employee.EmployeeId == employeeid && employee.Type == UserType.Admin));
+            Employee admin = bank != null ? bank.Employees.Find(employee => employee.EmployeeId == employeeid) : null;
             if (admin != null)
             {
                 user = admin;
@@ -28,8 +28,8 @@ namespace BankApplication.Services
         public Employee EmployeeLogin(string employeeid, string password)
         {
             Employee user = null;
-            Bank bank = BankAppDbctx.Banks.FirstOrDefault(b => b.Employees.Any(employee => employee.Id == employeeid));
-            Employee employee = bank != null ? bank.Employees.Find(employee => employee.Id == employeeid) : null;
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(b => b.Employees.Any(employee => employee.EmployeeId == employeeid));
+            Employee employee = bank != null ? bank.Employees.Find(employee => employee.EmployeeId == employeeid) : null;
             if (employee != null)
             {
                 user = employee;
@@ -59,6 +59,7 @@ namespace BankApplication.Services
                 Console.WriteLine("Password does not matched! Please try Again");
             }
             accountholder.Password = password;
+            BankAppDbctx.SaveChanges();
             return accountholder.Password;
         }
     }
