@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Linq;
 using BankApplication.Models;
+using BankApplication.Services.Interfaces;
 
 namespace BankApplication.Services
 {
-    public class EmployeeService
+    public class EmployeeService : IEmployeeService
     {
-        public Status UpdateEmployee(Employee employee,string employeeid)
+        public Status UpdateEmployee(Employee employee)
         {
             try
             {
-                Bank bank = BankDatabase.Banks.Find(b => b.Employees.Any(employee => employee.Id == employeeid));
-                var oldemployee = bank != null ? bank.Employees.Find(employee => employee.Id == employeeid) : null;
+                Bank bank = BankDatabase.Banks.Find(b => b.Employees.Any(employee => employee.Id == employee.Id));
+                var oldemployee = bank != null ? bank.Employees.Find(employee => employee.Id == employee.Id) : null;
                 if (oldemployee != null)
                 {
                     oldemployee.Name = employee.Name == string.Empty ? oldemployee.Name : employee.Name;
@@ -43,15 +44,15 @@ namespace BankApplication.Services
             return new Status() { IsSuccess = false, Message = "Error occured while deleting employee.Try again" };
         }
 
-        public Status UpdateAccountHolder(AccountHolder AccountHolder,string accountholderid)
+        public Status UpdateAccountHolder(AccountHolder accountholder)
         {
             try
             {
-                Bank bank = BankDatabase.Banks.Find(b => b.AccountHolders.Any(accountholder => accountholder.Id == accountholderid));
-                var oldaccountholder = bank != null ? bank.AccountHolders.Find(employee => employee.Id == accountholderid) : null;
-                oldaccountholder.Name = AccountHolder.Name == string.Empty ? oldaccountholder.Name : AccountHolder.Name;
-                oldaccountholder.PhoneNumber = AccountHolder.PhoneNumber == default(long) ? oldaccountholder.PhoneNumber : AccountHolder.PhoneNumber;
-                oldaccountholder.Address = AccountHolder.Address == string.Empty ? oldaccountholder.Address : AccountHolder.Address;
+                Bank bank = BankDatabase.Banks.Find(b => b.AccountHolders.Any(accountholder => accountholder.Id == accountholder.Id));
+                var oldaccountholder = bank != null ? bank.AccountHolders.Find(employee => employee.Id == accountholder.Id) : null;
+                oldaccountholder.Name = accountholder.Name == string.Empty ? oldaccountholder.Name : accountholder.Name;
+                oldaccountholder.PhoneNumber = accountholder.PhoneNumber == default(long) ? oldaccountholder.PhoneNumber : accountholder.PhoneNumber;
+                oldaccountholder.Address = accountholder.Address == string.Empty ? oldaccountholder.Address : accountholder.Address;
                 return new Status() { IsSuccess = true, Message = "Succefully updated" };
             }
             catch (Exception)

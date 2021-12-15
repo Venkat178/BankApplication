@@ -1,10 +1,11 @@
 ﻿using System;
 using BankApplication.Models;
+using BankApplication.Services.Interfaces;
 using System.Linq;
 
 namespace BankApplication.Services
 {
-    public class AccountService
+    public class AccountService : IAccountService
     {
         public Employee AdminLogin(string employeeid, string password)
         {

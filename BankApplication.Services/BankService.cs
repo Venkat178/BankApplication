@@ -1,10 +1,11 @@
 ﻿using System;
 using BankApplication.Models;
+using BankApplication.Services.Interfaces;
 using System.Linq;
 
 namespace BankApplication.Services
 {
-    public class BankService
+    public class BankService : IBankService
     {
         public Status SetUpBank(Branch branch,Bank bank, Employee admin)
         {
