@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Linq;
 using BankApplication.Models;
+using BankApplication.Services.Interfaces;
 
 namespace BankApplication.Services
 {
-    public class EmployeeService
+    public class EmployeeService : IEmployeeService
     {
         public BankApplicationDbContext BankAppDbctx;
 
