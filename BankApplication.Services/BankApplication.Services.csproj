@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BankApplication.Models\BankApplication.Models.csproj" />
+    <ProjectReference Include="..\Concerns\BankApplication.Concerns.csproj" />
   </ItemGroup>
 
 </Project>

@@ -19,19 +19,27 @@ namespace BankApplication.Utilities
             catch (Exception)
             {
                 Console.WriteLine("Please provide valid input");
-                GetStringInput(helpText, isRequired);
+                input = GetStringInput(helpText, isRequired);
             }
             return input;
         }
 
         public static long GetPhoneNumber(string helpText, bool isRequired)
         {
-            long input = default(int);
+            long input = default(long);
             try
             {
                 Console.Write(helpText);
-                input = Convert.ToInt64(Console.ReadLine());
-                if (isRequired && input > 9999999999)
+                string input1 = Console.ReadLine();
+                if(input1 == string.Empty)
+                {
+                    input = default(long);
+                }
+                else
+                {
+                    input = Convert.ToInt64(input1);
+                }
+                if (isRequired && 1000000000 < input && input > 9999999999)
                 {
                     input = GetPhoneNumber(helpText, isRequired);
                 }
@@ -39,7 +47,7 @@ namespace BankApplication.Utilities
             catch (Exception)
             {
                 Console.WriteLine("Phone number is not valid");
-                GetPhoneNumber(helpText, isRequired);
+                input = GetPhoneNumber(helpText, isRequired);
             }
             return input;
         }

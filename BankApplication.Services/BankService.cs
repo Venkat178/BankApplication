@@ -1,6 +1,6 @@
 ﻿using System;
 using BankApplication.Models;
-using BankApplication.Services.Interfaces;
+using BankApplication.Concerns;
 using System.Linq;
 
 namespace BankApplication.Services
@@ -20,21 +20,33 @@ namespace BankApplication.Services
             try
             {
                 branch.IsMainBranch = true;
+                branch.Bank = bank;
 
                 admin.BranchId = bank.Id;
                 admin.EmployeeId = admin.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
                 admin.Role = "Admin";
                 
-                bank.Employees.Add(admin);
 
                 BankAppDbctx.Banks.Add(bank);
-                bank.Branches.Add(branch);
+                BankAppDbctx.SaveChanges();
+                
+                branch.Bank = bank;
+                branch.BankId = bank.Id;
+                
+                BankAppDbctx.Branches.Add(branch);
+                BankAppDbctx.SaveChanges();
+                
+                admin.Bank = bank;
+                admin.BankId = bank.Id; 
+                admin.BranchId = branch.Id;
+
+                BankAppDbctx.Employees.Add(admin);
                 BankAppDbctx.SaveChanges();
                 status.IsSuccess = true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.InnerException.Message);
                 status.IsSuccess = false;
                 status.Message = "Unable to create a bank...!";
             }
@@ -44,27 +56,29 @@ namespace BankApplication.Services
 
         public Status Register(Bank bank, AccountHolder AccountHolder)
         {
-            if (bank.AccountHolders.Count != 0 && bank.AccountHolders.Any(p => p.Name == AccountHolder.Name) == true)
+            if (BankAppDbctx.AccountHolders.Any(p => p.Name == AccountHolder.Name) == true)
             {
                 return new Status() { IsSuccess = false, Message = "Account already exists!" };
             }
-            AccountHolder.Id = AccountHolder.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
             AccountHolder.Type = UserType.AccountHolder;
-            bank.AccountHolders.Add(AccountHolder);
+            BankAppDbctx.AccountHolders.Add(AccountHolder);
+            BankAppDbctx.SaveChanges();
             return new Status() { IsSuccess = true, Message = "Account Created successfully...!" };
         }
 
-        public string EmployeeRegister(Employee employee,Bank bank)
+        public string EmployeeRegister(Employee employee)
         {
             try
             {
                 employee.Type = UserType.Employee;
                 employee.EmployeeId = employee.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
-                bank.Employees.Add(employee);
+                BankAppDbctx.Employees.Add(employee);
+                BankAppDbctx.SaveChanges();
                 return employee.EmployeeId;
             }
-            catch(Exception)
+            catch(Exception ex)
             {
+                Console.WriteLine(ex.InnerException.Message);
                 return null;
             }
         }
@@ -78,12 +92,13 @@ namespace BankApplication.Services
                 Amount = amt,
                 CreatedBy = accountholder.Id,
                 CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss"),
-                Id = "TXN" + accountholder.Id + accountholder.Id + accountholder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                TransactionId = "TXN" + accountholder.Id + accountholder.Id + accountholder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
                 Type = TransactionType.Credit
             };
             accountholder.Balance += amt;
-            accountholder.Transactions.Add(transaction);
-            return transaction.Id;
+            BankAppDbctx.Transactions.Add(transaction);
+            BankAppDbctx.SaveChanges();
+            return transaction.TransactionId;
         }
 
         public string Withdraw(AccountHolder AccountHolder, double amt)
@@ -99,16 +114,16 @@ namespace BankApplication.Services
                     Amount = amt,
                     CreatedBy = AccountHolder.Id,
                     CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss"),
-                    Id = "TXN" + AccountHolder.Id + AccountHolder.Id + AccountHolder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                    TransactionId = "TXN" + AccountHolder.Id + AccountHolder.Id + AccountHolder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
                     Type = TransactionType.Debit
             };
                 
-                AccountHolder.Transactions.Add(transaction);
-                txnid = transaction.Id;
+                BankAppDbctx.Transactions.Add(transaction);
+                BankAppDbctx.SaveChanges();
+                txnid = transaction.TransactionId;
             }
             return txnid;
         }
-
 
         public string Transfer(AccountHolder AccountHolder,AccountHolder recevierAccountHolder, double amt,Charges charge)
         {
@@ -122,38 +137,34 @@ namespace BankApplication.Services
                 transaction.Amount = amt;
                 transaction.CreatedBy = AccountHolder.Id;
                 transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
-                transaction.Id = "TXN" + AccountHolder.Id + recevierAccountHolder.Id + AccountHolder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
+                transaction.TransactionId = "TXN" + AccountHolder.Id + recevierAccountHolder.Id + AccountHolder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
                 transaction.Type = TransactionType.Transfer;
-                txnid = transaction.Id;
-                //AccountHolder.Balance = AccountHolder.BankId == recevierAccountHolder.BankId ? (charge == Charges.RTGS ? (AccountHolder.Balance >= amt ? amt : ))
-
+                txnid = transaction.TransactionId;
                 if (AccountHolder.BankId == recevierAccountHolder.BankId)
                 {
                     AccountHolder.Balance = charge == Charges.RTGS ? (AccountHolder.Balance >= amt ? AccountHolder.Balance - amt : 0) : (AccountHolder.Balance >= amt + (0.05 * amt) ? AccountHolder.Balance - (amt + (0.05 * amt)) : 0);
-                    AccountHolder.Transactions.Add(transaction);
-                    recevierAccountHolder.Transactions.Add(transaction);
+                    BankAppDbctx.Transactions.Add(transaction);
+                    BankAppDbctx.SaveChanges();
                 }
                 else
                 {
                     AccountHolder.Balance = charge == Charges.RTGS ? (AccountHolder.Balance >= amt + (0.02 * amt) ? AccountHolder.Balance - (amt + (0.02 * amt)) : 0) : (AccountHolder.Balance >= amt + (0.06 * amt) ? AccountHolder.Balance -= (amt + (0.06 * amt)) : 0);
-                    AccountHolder.Transactions.Add(transaction);
-                    recevierAccountHolder.Transactions.Add(transaction);
+                    BankAppDbctx.Transactions.Add(transaction);
+                    BankAppDbctx.SaveChanges();
                 }
             }
             return txnid;
         }
 
-        public AccountHolder GetAccountHolder(string accountid)
+        public AccountHolder GetAccountHolder(int accountid)
         {
-            Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == accountid));
-            AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == accountid) : null;
+            AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(account => account.Id == accountid);
             return accountholder;
         }
 
-        public Employee GetEmployee(string employeeid,string bankid)
+        public Employee GetEmployee(int employeeid,int bankid)
         {
-            Bank bank = BankAppDbctx.Banks.FirstOrDefault(b => b.Employees.Any(employee => employee.EmployeeId == employeeid && employee.Type == UserType.Employee));
-            Employee employee = bank != null ? bank.Employees.Find(employee => employee.EmployeeId == employeeid && employee.Type == UserType.Employee) : null;
+            Employee employee = BankAppDbctx.Employees.FirstOrDefault(employee => employee.Id == employeeid && employee.Type == UserType.Employee);
             return employee;
         }
 
@@ -162,21 +173,23 @@ namespace BankApplication.Services
             return AccountHolder.Balance;
         }
 
-        public string EmployeeDeposit(AccountHolder AccountHolder, double amt)
+        public string EmployeeDeposit(AccountHolder accountholder, double amt)
         {
             Transaction transaction = new Transaction()
             {
-                SrcAccId = AccountHolder.Id,
-                DestAccId = AccountHolder.Id,
+                SrcAccId = accountholder.Id,
+                DestAccId = accountholder.Id,
                 Amount = amt,
-                CreatedBy = AccountHolder.Id,
+                CreatedBy = accountholder.Id,
                 CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss"),
-                Id = "TXN" + AccountHolder.Id + AccountHolder.Id + AccountHolder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                TransactionId = "TXN" + accountholder.Id + accountholder.Id + accountholder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
                 Type = TransactionType.Credit
             };
-            AccountHolder.Balance += amt;
-            AccountHolder.Transactions.Add(transaction);
-            return transaction.Id;
+            accountholder.Balance += amt;
+            BankAppDbctx.Transactions.Add(transaction);
+            BankAppDbctx.AccountHolders.Update(accountholder);
+            BankAppDbctx.SaveChanges();
+            return transaction.TransactionId;
         }
 
         public string EmployeeWithdraw(AccountHolder AccountHolder, double amt)
@@ -191,11 +204,13 @@ namespace BankApplication.Services
                     Amount = amt,
                     CreatedBy = AccountHolder.Id,
                     CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss"),
-                    Id = "TXN" + AccountHolder.Id + AccountHolder.Id + AccountHolder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                    TransactionId = "TXN" + AccountHolder.Id + AccountHolder.Id + AccountHolder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
                     Type = TransactionType.Debit
                 };
-                AccountHolder.Transactions.Add(transaction);
-                return transaction.Id;
+                BankAppDbctx.Transactions.Add(transaction);
+                BankAppDbctx.AccountHolders.Update(AccountHolder);
+                BankAppDbctx.SaveChanges();
+                return transaction.TransactionId;
             }
             return null;
         }
@@ -211,22 +226,22 @@ namespace BankApplication.Services
                 transaction.Amount = amt;
                 transaction.CreatedBy = AccountHolder.Id;
                 transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
-                transaction.Id = "TXN" + AccountHolder.Id + recevierAccountHolder.Id + AccountHolder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
+                transaction.TransactionId = "TXN" + AccountHolder.Id + recevierAccountHolder.Id + AccountHolder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
                 transaction.Type = TransactionType.Transfer;
 
                 if (AccountHolder.BankId == recevierAccountHolder.BankId)
                 {
                     AccountHolder.Balance = charge == Charges.RTGS ? (AccountHolder.Balance >= amt ? AccountHolder.Balance - amt : 0) : (AccountHolder.Balance >= amt + (0.05 * amt) ? AccountHolder.Balance - (amt + (0.05 * amt)) : 0);
-                    AccountHolder.Transactions.Add(transaction);
-                    recevierAccountHolder.Transactions.Add(transaction);
-                    return transaction.Id;
+                    BankAppDbctx.Transactions.Add(transaction);
+                    BankAppDbctx.SaveChanges();
+                    return transaction.TransactionId;
                 }
                 else
                 {
                     AccountHolder.Balance = charge == Charges.RTGS ? (AccountHolder.Balance >= amt + (0.02 * amt) ? AccountHolder.Balance - (amt + (0.02 * amt)) : 0) : (AccountHolder.Balance >= amt + (0.06 * amt) ? AccountHolder.Balance -= (amt + (0.06 * amt)) : 0);
-                    AccountHolder.Transactions.Add(transaction);
-                    recevierAccountHolder.Transactions.Add(transaction);
-                    return transaction.Id;
+                    BankAppDbctx.Transactions.Add(transaction);
+                    BankAppDbctx.SaveChanges();
+                    return transaction.TransactionId;
                 }
             }
             return null;

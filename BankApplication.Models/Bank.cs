@@ -15,9 +15,7 @@ namespace BankApplication.Models
 
 			this.AccountHolders = new List<AccountHolder>();
 		}
-
-		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public string Id { get; set; }
+		public int Id { get; set; }
 		public string Name { get; set; }
 		public int IMPSChargesforSameBank { get; set; }
 		public int RTGSChargesforSameBank { get; set; }

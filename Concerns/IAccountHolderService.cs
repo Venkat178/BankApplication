@@ -1,11 +1,11 @@
 ﻿using BankApplication.Models;
 
-namespace BankApplication.Services.Interfaces
+namespace BankApplication.Concerns
 {
     public interface IAccountHolderService
     {
-        public Status UpdateAccountHolder(AccountHolder accountholder, string accountholderid);
-        public Status DeleteAccountHolderAccount(string userid);
+        public Status UpdateAccountHolder(AccountHolder accountholder);
+        public Status DeleteAccountHolderAccount(int userid);
         public Status revertTransaction(Transaction transaction);
         public Status AddCurrency(string currencyCode, double exchangeRate, Bank bank);
         public Status UpdateCharges(Bank bank);

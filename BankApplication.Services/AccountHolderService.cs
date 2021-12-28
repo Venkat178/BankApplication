@@ -1,6 +1,6 @@
 ﻿using System;
 using BankApplication.Models;
-using BankApplication.Services.Interfaces;
+using BankApplication.Concerns;
 using System.Linq;
 
 namespace BankApplication.Services
@@ -14,33 +14,36 @@ namespace BankApplication.Services
             BankAppDbctx = new BankApplicationDbContext();
         }
 
-        public Status UpdateAccountHolder(AccountHolder accountholder,string accountholderid)
+        public Status UpdateAccountHolder(AccountHolder accountholder)
         {
             try
             {
-                Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == accountholderid));
-                AccountHolder oldaccountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == accountholderid) : null;
-                oldaccountholder.Name = accountholder.Name == string.Empty ? oldaccountholder.Name : accountholder.Name;
-                oldaccountholder.PhoneNumber = accountholder.PhoneNumber == default(long) ? oldaccountholder.PhoneNumber : accountholder.PhoneNumber;
-                oldaccountholder.Address = accountholder.Address == string.Empty ? oldaccountholder.Address : accountholder.Address;
-                BankAppDbctx.SaveChanges();
-                return new Status() { IsSuccess = true, Message = "Successfully updated" };
+                AccountHolder oldaccountholder = BankAppDbctx.AccountHolders.FirstOrDefault(account => account.Id == accountholder.Id);
+                if(oldaccountholder != null)
+                {
+                    oldaccountholder.Name = accountholder.Name == string.Empty ? oldaccountholder.Name : accountholder.Name;
+                    oldaccountholder.PhoneNumber = accountholder.PhoneNumber == default(long) ? oldaccountholder.PhoneNumber : accountholder.PhoneNumber;
+                    oldaccountholder.Address = accountholder.Address == string.Empty ? oldaccountholder.Address : accountholder.Address;
+                    BankAppDbctx.SaveChanges();
+                    return new Status() { IsSuccess = true, Message = "Successfully updated" };
+                }
+                
             }
             catch(Exception)
             {
-                return new Status() { IsSuccess = false, Message = "Changes not done!" }; ;
+                return new Status() { IsSuccess = false, Message = "Changes not done!" };
             }
+            return new Status() { IsSuccess = false, Message = "Changes not done!" };
         }
 
-        public Status DeleteAccountHolderAccount(string userid)
+        public Status DeleteAccountHolderAccount(int userid)
         {
             try
             {
-                Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == userid));
-                AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Id == userid) : null;
+                AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(account => account.Id == userid);
                 if (accountholder != null)
                 {
-                    bank.AccountHolders.Remove(accountholder);
+                    BankAppDbctx.AccountHolders.Remove(accountholder);
                     BankAppDbctx.SaveChanges();
                     return new Status() { IsSuccess = true, Message = "Successfully deleted" };
                 }
@@ -56,13 +59,12 @@ namespace BankApplication.Services
         {
             try
             {
-                Bank bank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Transactions.Any(trans => trans.Id == transaction.Id)));
-                AccountHolder senderaccountholder = bank.AccountHolders.Find(AccountHolder => AccountHolder.Id == transaction.SrcAccId);
-                AccountHolder receiveraccountholder = bank.AccountHolders.Find(AccountHolder => AccountHolder.Id == transaction.DestAccId);
+                AccountHolder senderaccountholder = BankAppDbctx.AccountHolders.FirstOrDefault(AccountHolder => AccountHolder.Id == transaction.SrcAccId);
+                AccountHolder receiveraccountholder = BankAppDbctx.AccountHolders.FirstOrDefault(AccountHolder => AccountHolder.Id == transaction.DestAccId);
                 senderaccountholder.Balance += transaction.Amount;
                 receiveraccountholder.Balance -= transaction.Amount;
-                senderaccountholder.Transactions.Add(transaction);
-                receiveraccountholder.Transactions.Add(transaction);
+                BankAppDbctx.Transactions.Add(transaction);
+                //receiveraccountholder.Transactions.Add(transaction);
                 BankAppDbctx.SaveChanges();
                 return new Status() { IsSuccess = true, Message = "Succefully transfered" };
             }
@@ -76,7 +78,7 @@ namespace BankApplication.Services
         {
             try
             {
-                bank.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "currencyCode", ExchangeRate = exchangeRate ,IsDefault = false});
+                BankAppDbctx.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "currencyCode", ExchangeRate = exchangeRate ,IsDefault = false});
                 BankAppDbctx.SaveChanges();
                 return new Status() { IsSuccess = true, Message = "Successfully added" };
             }

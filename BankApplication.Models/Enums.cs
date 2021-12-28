@@ -46,6 +46,7 @@
         AddBranch,
         DeleteBranch,
         AddCurrency,
+        UpdateCharges,
         Exit
     }
 

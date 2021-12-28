@@ -1,6 +1,6 @@
 ﻿using System;
 using BankApplication.Models;
-using BankApplication.Services.Interfaces;
+using BankApplication.Concerns;
 using System.Linq;
 
 namespace BankApplication.Services
@@ -14,11 +14,10 @@ namespace BankApplication.Services
             BankAppDbctx = new BankApplicationDbContext();
         }
 
-        public Employee AdminLogin(string employeeid, string password)
+        public Employee AdminLogin(int employeeid, string password)
         {
             Employee user = null;
-            Bank bank = BankAppDbctx.Banks.FirstOrDefault(b => b.Employees.Any(employee=> employee.EmployeeId == employeeid && employee.Type == UserType.Admin));
-            Employee admin = bank != null ? bank.Employees.Find(employee => employee.EmployeeId == employeeid) : null;
+            Employee admin = BankAppDbctx.Employees.FirstOrDefault(employee => employee.Id == employeeid);
             if (admin != null)
             {
                 user = admin;
@@ -26,11 +25,10 @@ namespace BankApplication.Services
             return user;
         }
 
-        public Employee EmployeeLogin(string employeeid, string password)
+        public Employee EmployeeLogin(int employeeid, string password)
         {
             Employee user = null;
-            Bank bank = BankAppDbctx.Banks.FirstOrDefault(b => b.Employees.Any(employee => employee.EmployeeId == employeeid));
-            Employee employee = bank != null ? bank.Employees.Find(employee => employee.EmployeeId == employeeid) : null;
+            Employee employee = BankAppDbctx.Employees.FirstOrDefault(employee => employee.Id == employeeid);
             if (employee != null)
             {
                 user = employee;
@@ -38,11 +36,10 @@ namespace BankApplication.Services
             return user;
         }
 
-        public AccountHolder Login(string userid, string password)
+        public AccountHolder Login(int userid, string password)
         {
             AccountHolder user = null;
-            Bank bank2 = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == userid));
-            AccountHolder accountholder = bank2 != null ? bank2.AccountHolders.Find(account => account.Id == userid) : null;
+            AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(account => account.Id == userid);
             if (accountholder != null)
             {
                 user = accountholder;
@@ -50,10 +47,9 @@ namespace BankApplication.Services
             return user;
         }
 
-        public string ResetPassword(string userid)
+        public string ResetPassword(int userid)
         {
-            Bank bank2 = BankAppDbctx.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Id == userid));
-            AccountHolder accountholder = bank2 != null ? bank2.AccountHolders.Find(account => account.Id == userid) : null;
+            AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(account => account.Id == userid);
             string password = Utilities.Utilities.GetStringInput("Enter the new password  :  ", true);
             while (password != Utilities.Utilities.GetStringInput("Re-Enter the password  :  ", true))
             {

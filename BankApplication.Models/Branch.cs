@@ -1,11 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-
 namespace BankApplication.Models
 {
     public class Branch
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public string Id { get; set; }
+        public int Id { get; set; }
 
         public string Name { get; set; }
 
@@ -15,7 +13,7 @@ namespace BankApplication.Models
 
         public bool IsMainBranch { get; set; }
 
-        public string BankId { get; set; }
+        public int BankId { get; set; }
 
         public Bank Bank { get; set; }
     }

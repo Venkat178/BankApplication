@@ -1,11 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-
-namespace BankApplication.Models
+﻿namespace BankApplication.Models
 {
     public class CurrencyCode
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         public string Code { get; set; }
@@ -14,7 +10,7 @@ namespace BankApplication.Models
 
         public bool IsDefault { get; set; }
 
-        public string BankId { get; set; }
+        public int BankId { get; set; }
 
         public Bank Bank { get; set; }
     }

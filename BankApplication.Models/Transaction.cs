@@ -3,11 +3,12 @@ namespace BankApplication.Models
 {
     public class Transaction
     {
-        public string Id { set; get; }
-        public string SrcAccId { set; get; }
-        public string DestAccId { set; get; }
+        public int Id { set; get; }
+        public string TransactionId { get; set; }
+        public int SrcAccId { set; get; }
+        public int DestAccId { set; get; }
         public double Amount { set; get; }
-        public string CreatedBy { get; set; }
+        public int CreatedBy { get; set; }
         public string CreatedOn { set; get; }
         public TransactionType Type { set; get; }
     }
