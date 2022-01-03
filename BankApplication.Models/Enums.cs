@@ -54,7 +54,7 @@
     {
         Male,
         Female,
-        other
+        Other
     }
 
     public enum TransactionType

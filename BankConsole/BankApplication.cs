@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
 using BankApplication.Models;
 using BankApplication.Services;
 using BankApplication.Concerns;
@@ -9,7 +10,6 @@ namespace BankApplication
     class BankApplication
     {
         IBankService BankService;
-        User LoggedInUser;
 
         public void Initialize()
         {
@@ -48,106 +48,85 @@ namespace BankApplication
             this.MainMenu();
         }
 
-        public void ViewAllBankBranches(int bankid)
+        public int ViewAllAccountHolders()
         {
-            BankApplicationDbContext bankdbapp = new BankApplicationDbContext();
-            foreach (var i in bankdbapp.Branches)
+            AccountHolderService accountholderservice = new AccountHolderService();
+            int bankid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the bank id  :  ", true));
+            APIResponse apiresponse = accountholderservice.ViewAllAccountHolders(bankid);
+            if (apiresponse.IsSuccess)
             {
-                if(i.BankId == bankid)
+                List<AccountHolder> accountholderlist = apiresponse.AccountHolderList;
+                foreach (var i in accountholderlist)
                 {
-                    Console.WriteLine(i.Id + "  -  " + i.Name);
+                    Console.WriteLine(i.Id + " - " + i.Name);
                 }
-                
-            }
-        }
-
-        public void ViewAllAccounts(int bankid)
-        {
-            BankApplicationDbContext bankdbapp = new BankApplicationDbContext();
-            foreach (var i in bankdbapp.AccountHolders)
-            {
-                if(i.BankId == bankid)
-                {
-                    Console.WriteLine(i.Id + "   -   " + i.Name + "   -   " + i.PhoneNumber + "   -   " + i.Address);
-                }
-                
-            }
-        }
-
-        public void ViewAllEmployees(int bankid)
-        {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            foreach (var i in bankappdb.Employees)
-            {
-                if(i.BankId == bankid)
-                {
-                    Console.WriteLine(i.Id + "   -   " + i.Name + "   -   " + i.PhoneNumber + "   -   " + i.Address);
-                }
-                
-            }
-        }
-
-        public void BankServiceViewTransactions()
-        {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            int userid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true));
-            AccountHolder accountholder = bankappdb.AccountHolders.FirstOrDefault( _=> _.Id == userid);
-            if (accountholder != null)
-            {
-                foreach (var i in bankappdb.Transactions)
-                {
-                    if(i.SrcAccId == userid || i.DestAccId == userid)
-                    {
-                        Console.WriteLine(i.SrcAccId + " to " + i.DestAccId + " of " + i.Amount);
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("User not found");
-                this.BankServiceViewTransactions();
-            }
-        }
-
-        public int BankServiceViewAllBankBranches()
-        {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IBankService bankservice = (IBankService)new BankService();
-            int bankid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true));
-            Bank bank = bankappdb.Banks.FirstOrDefault(bank => bank.Id == bankid);
-            if(bank != null)
-            {
-                Console.WriteLine("Our Branches are   :   ");
-                this.ViewAllBankBranches(bankid);
                 return bankid;
             }
             else
             {
-                Console.WriteLine("Bank not found");
-                this.BankServiceViewAllBankBranches();
+                this.ViewAllAccountHolders();
+                return bankid;
             }
-            return 0;
         }
 
-        public void BankServiceViewAllAccounts()
+        public void ViewAllEmployees()
         {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IBankService bankservice = (IBankService) new BankService();
-            int bankid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true));
-            Bank bank = bankappdb.Banks.FirstOrDefault(bank => bank.Id == bankid);
-            if (bank != null)
+            EmployeeService employeeservice = new EmployeeService();
+            int bankid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the bank id  :  ", true));
+            APIResponse apiresponse = employeeservice.ViewAllEmployees(bankid);
+            if (apiresponse.IsSuccess)
             {
-                Console.WriteLine("Our Branches are   :   ");
-                this.ViewAllAccounts(bankid);
+                List<Employee> employeelist = apiresponse.EmployeeList;
+                foreach (var i in employeelist)
+                {
+                    Console.WriteLine(i.Id + " - " + i.EmployeeId + " - " + i.Name);
+                }
             }
             else
             {
-                Console.WriteLine("Bank not found");
-                this.BankServiceViewAllAccounts();
+                this.ViewAllEmployees();
             }
         }
 
+        public void ViewTransactions()
+        {
+            AccountHolderService accountholderservice =new AccountHolderService();
+            int accountid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the account id  :  ", true));
+            APIResponse apiresponse = accountholderservice.ViewTransactions(accountid);
+            if (apiresponse.IsSuccess)
+            {
+                List<Transaction> transactionlist = apiresponse.TransactionList;
+                foreach (var i in transactionlist)
+                {
+                    Console.WriteLine(i.SrcAccId + " to " + i.DestAccId + " of " + i.Amount);
+                }
+            }
+            else
+            {
+                this.ViewTransactions();
+            }
+        }
 
+        public int BankServiceViewAllBranches()
+        {
+            IBankService bankservice = new BankService();
+            int bankid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the bank id  :  ", true));
+            APIResponse apiresponse = bankservice.ViewAllBranches(bankid);
+            if (apiresponse.IsSuccess)
+            {
+                List<Branch> branchlist = apiresponse.BranchList;
+                foreach (var i in branchlist)
+                {
+                    Console.WriteLine(i.Id + " - " + i.Name);
+                }
+                return bankid;
+            }
+            else
+            {
+                this.BankServiceViewAllBranches();
+                return bankid;
+            }
+        }
 
         public void SetUpBank()
         {
@@ -184,7 +163,7 @@ namespace BankApplication
             }
 
             
-            Status status = this.BankService.SetUpBank(branch, bank, admin);
+            APIResponse status = this.BankService.SetUpBank(branch, bank, admin);
             if (status.IsSuccess)
             {
                 Console.WriteLine("The Admin Id is " + admin.EmployeeId);
@@ -199,33 +178,29 @@ namespace BankApplication
 
         public void Login()
         {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
+            AccountService accountservice = new AccountService();
             int username = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter userid :  ", true));
             string password = Utilities.Utilities.GetStringInput("Enter password :  ", true);
             try
             {
-                if (bankappdb.Banks.Any(_ => _.Employees.Any(emp => emp.Id == username && emp.Password == password && emp.Type == UserType.Admin)))
+                Employee employee = accountservice.AdminLogin(username, password);
+                if(employee != null)
                 {
-                    this.LoggedInUser = (Employee)bankappdb.Employees.FirstOrDefault(emp => emp.Id == username && emp.Password == password && emp.Type == UserType.Admin);
-                    Console.WriteLine("Login Successfully");
-                    Employee LoggedInUser = (Employee)this.LoggedInUser;
-                    this.AdminConsole(LoggedInUser);
+                    this.AdminConsole(employee);
                     return;
                 }
 
-                if (bankappdb.Banks.Any(_ => _.Employees.Any(emp => emp.Id == username && emp.Password == password && emp.Type == UserType.Employee))){
-                    this.LoggedInUser = (Employee)bankappdb.Employees.FirstOrDefault(emp => emp.Id == username && emp.Password == password && emp.Type == UserType.Employee);
-                    Console.WriteLine("Login Successfully");
-                    Employee LoggedInUser = (Employee)this.LoggedInUser;
-                    this.EmployeeConsole(LoggedInUser);
+                Employee employee1 = accountservice.EmployeeLogin(username, password);
+                if (employee1 != null)
+                {
+                    this.EmployeeConsole(employee1);
                     return;
                 }
 
-                if (bankappdb.Banks.Any(_ => _.AccountHolders.Any(emp => emp.Id == username && emp.Password == password))){
-                    this.LoggedInUser = (AccountHolder)bankappdb.AccountHolders.FirstOrDefault(emp => emp.Id == username && emp.Password == password );
-                    Console.WriteLine("Login Successfully");
-                    AccountHolder LoggedInUser = (AccountHolder)this.LoggedInUser;
-                    this.AccountHolderConsole(LoggedInUser);
+                AccountHolder accountholder = accountservice.AccountHolderLogin(username, password);
+                if (accountholder != null)
+                {
+                    this.AccountHolderConsole(accountholder);
                     return;
                 }
                 else
@@ -243,26 +218,14 @@ namespace BankApplication
 
         public string EmployeeRegistration()
         {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IBankService bankservice = (IBankService)new BankService();
+            IEmployeeService employeeservice = new EmployeeService();
             Employee employee = new Employee();
             try
             {
                 employee.Name = Utilities.Utilities.GetStringInput("Enter the Employee Name  :  ", true);
-                int bankid = this.BankServiceViewAllBankBranches();
-                Bank bank = bankappdb.Banks.FirstOrDefault(bank => bank.Id == bankid);
-                if (bank == null)
-                {
-                    this.EmployeeRegistration();
-                }
+                int bankid = this.BankServiceViewAllBranches();
                 employee.BankId = bankid;
                 employee.BranchId = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Branch Id from above  :  ", true));
-                Branch branch = bankappdb.Branches.FirstOrDefault(branch => branch.Id == employee.BranchId);
-                if (bank == null)
-                {
-                    Console.WriteLine("No bank found");
-                    this.EmployeeRegistration();
-                }
                 employee.PhoneNumber = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Phone number  :  ", true));
                 employee.Address = Utilities.Utilities.GetStringInput("Enter the Your Address  :  ", true);
                 employee.Gender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.Utilities.GetStringInput("Enter the Your Gender  :  ", true), true);
@@ -272,8 +235,8 @@ namespace BankApplication
                     Console.WriteLine("Password does not matched! Please try Again");
                 }
                 employee.Password = password;
-                string EmployeeId = bankservice.EmployeeRegister(employee);
-                if(EmployeeId == null)
+                APIResponse apiresponse = employeeservice.CreateEmployee(employee,employee.BranchId);
+                if(apiresponse.Message == null)
                 {
                     Console.WriteLine("Name should not be short");
                     this.EmployeeRegistration();
@@ -290,19 +253,13 @@ namespace BankApplication
 
         public string AccountHolderRegistration()
         {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
             string accountholderid = null;
             try
             {
-                BankService bankservice = new BankService();
+                AccountHolderService accountholderservice = new AccountHolderService();
                 AccountHolder accountholder = new AccountHolder();
                 accountholder.Name = Utilities.Utilities.GetStringInput("Enter the Your Name   :   ", true);
-                int bankid = this.BankServiceViewAllBankBranches();
-                Bank bank = bankappdb.Banks.FirstOrDefault(bank => bank.Id == bankid);
-                if (bank == null)
-                {
-                    this.AccountHolderRegistration();
-                }
+                int bankid = this.BankServiceViewAllBranches();
                 accountholder.BankId = bankid;
                 accountholder.BranchId = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Branch Id from above  :  ", true));
                 accountholder.PhoneNumber = Convert.ToInt32(Utilities.Utilities.GetPhoneNumber("Enter the Phone number  :  ", true));
@@ -314,7 +271,8 @@ namespace BankApplication
                     Console.WriteLine("Password does not matched! Please try Again");
                 }
                 accountholder.Password = password;
-                Status status = bankservice.Register(bank, accountholder);
+                //check branchid==================
+                APIResponse status = accountholderservice.CreateAccountHolder(accountholder, accountholder.BranchId);
                 if(!status.IsSuccess)
                 {
                     Console.WriteLine("Unable to register");
@@ -329,85 +287,151 @@ namespace BankApplication
             return accountholderid;
         }
 
-        public void AccountHolderConsoleWithdraw(AccountHolder AccountHolder)
+        public void Deposit(User user)
         {
-            IBankService bankservice = (IBankService) new BankService();
-            double amt1 = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount  :  ", true));
-            if (amt1 <= AccountHolder.Balance)
+            IBankService bankservice = new BankService();
+            APIResponse apiresponse;
+            if (user.Type == UserType.AccountHolder)
             {
-                string transid1 = bankservice.Withdraw(AccountHolder, amt1);
-                Console.WriteLine("Transaction Id is  :  " + transid1);
+                double amt = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount  :  ", true));
+                apiresponse = bankservice.Deposit(user, user.Id, amt);
+                if (apiresponse.IsSuccess)
+                {
+                    Console.WriteLine("Transaction Id is  :  " + apiresponse.Message);
+                }
+                else
+                {
+                    Console.WriteLine(apiresponse.Message);
+                    this.Deposit(user);
+                }
             }
             else
             {
-                Console.WriteLine("Insufficient amount");
-                this.AccountHolderConsoleWithdraw(AccountHolder);
+                double amt = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount  :  ", true));
+                int accountid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the account id  :  ", true));
+                apiresponse = bankservice.Deposit(user,accountid, amt);
+                if (apiresponse.IsSuccess)
+                {
+                    Console.WriteLine("Transaction Id is  :  " + apiresponse.Message);
+                }
+                else
+                {
+                    Console.WriteLine(apiresponse.Message);
+                    this.Deposit(user);
+                }
+            }
+            
+        }
+
+        public void Withdraw(User user)
+        {
+            IBankService bankservice = new BankService();
+            double amt = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount  :  ", true));
+            if(user.Type == UserType.AccountHolder)
+            {
+                APIResponse apiresponse = bankservice.Withdraw(user, user.Id, amt);
+                if (apiresponse.IsSuccess)
+                {
+                    Console.WriteLine("Transaction Id is  :  " + apiresponse.Message);
+                }
+                else
+                {
+                    Console.WriteLine(apiresponse.Message);
+                    this.Withdraw(user);
+                }
+            }
+            else
+            {
+                int accountid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the account id  :  ", true));
+                APIResponse apiresponse = bankservice.Withdraw(user, accountid, amt);
+                if (apiresponse.IsSuccess)
+                {
+                    Console.WriteLine("Transaction Id is  :  " + apiresponse.Message);
+                }
+                else
+                {
+                    Console.WriteLine(apiresponse.Message);
+                    this.Withdraw(user);
+                }
             }
         }
 
-        public void AccountHolderConsoleTransfer(AccountHolder accountholder)
+        public void Transfer(User user)
         {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IBankService bankservice = (IBankService) new BankService();
-            Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.Utilities.GetStringInput("What type of transfer you want IMPS/RTGS", true), true);
-            int destuserId = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Reciever's Id  :  ", true));
-            AccountHolder recevieraccountholder = bankappdb.AccountHolders.FirstOrDefault(account => account.Id == destuserId);
-            if (recevieraccountholder != null)
+            IBankService bankservice = new BankService();
+            if(user.Type == UserType.AccountHolder)
             {
+                int recevieraccountid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the DestinationAccount Id  :  ", true));
                 double amt = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the Amount  :  ", true));
-                if (recevieraccountholder != null)
+                Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.Utilities.GetStringInput("What type of transfer you want IMPS/RTGS", true), true);
+
+                APIResponse apiresponse = bankservice.Transfer(user, user.Id, recevieraccountid, amt, charge);
+                if (apiresponse.IsSuccess)
                 {
-                    if (accountholder.BankId == recevieraccountholder.BankId)
-                    {
-                        if (charge == Charges.RTGS)
-                        {
-                            if (accountholder.Balance <= amt)
-                            {
-                                Console.WriteLine("You do not have sufficient money");
-                                this.AccountHolderConsoleTransfer(accountholder);
-                            }
-                        }
-                        else
-                        {
-                            if (accountholder.Balance <= amt + (0.05 * amt))
-                            {
-                                Console.WriteLine("You do not have sufficient money");
-                                this.AccountHolderConsoleTransfer(accountholder);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (charge == Charges.RTGS)
-                        {
-                            if (accountholder.Balance <= amt + (0.02 * amt))
-                            {
-                                Console.WriteLine("You do not have sufficient money");
-                                this.AccountHolderConsoleTransfer(accountholder);
-                            }
-                        }
-                        else
-                        {
-                            if (accountholder.Balance <= amt + (0.06 * amt))
-                            {
-                                Console.WriteLine("You do not have sufficient money");
-                                this.AccountHolderConsoleTransfer(accountholder);
-                            }
-                        }
-                    }
+                    Console.WriteLine("Transaction Id is  :  " + apiresponse.Message);
                 }
-                string transid2 = bankservice.Transfer(accountholder, recevieraccountholder, amt, charge);
-                Console.WriteLine("Transaction Id is  :  " + transid2);
+                else
+                {
+                    Console.WriteLine("The destination id is not found");
+                    this.Transfer(user);
+                }
             }
             else
             {
-                Console.WriteLine("The destination id is not found");
-                AccountHolderConsoleTransfer(accountholder);
+                int srcaccountid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Source Id  :  ", true));
+                int recevieraccountid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the DestinationAccount Id  :  ", true));
+                double amt = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the Amount  :  ", true));
+                Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.Utilities.GetStringInput("What type of transfer you want IMPS/RTGS", true), true);
+
+                APIResponse apiresponse = bankservice.Transfer(user, srcaccountid, recevieraccountid, amt, charge);
+                if (apiresponse.IsSuccess)
+                {
+                    Console.WriteLine("Transaction Id is  :  " + apiresponse.Message);
+                }
+                else
+                {
+                    Console.WriteLine("The destination id is not found");
+                    this.Transfer(user);
+                }
             }
         }
+
+        public void ViewBalance()
+        {
+            AccountHolderService accountholderservice = new AccountHolderService();
+            int accountid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Account Id  :  ", true));
+            APIResponse apiresponse = accountholderservice.ViewBalance(accountid);
+            if(apiresponse.IsSuccess)
+            {
+                Console.WriteLine("Your Balance is " + apiresponse.Message);
+            }
+            else
+            {
+                Console.WriteLine(apiresponse.Message);
+                this.ViewBalance();
+            }
+        }
+
+        public void AddBranch()
+        {
+            IBankService bankservice = new BankService();
+            int bankid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true));
+            Branch branch = new Branch()
+            {
+                Name = Utilities.Utilities.GetStringInput("Enter the Branch Name  :  ", true),
+                Address = Utilities.Utilities.GetStringInput("Enter the Branch Address  :  ", true),
+                IFSCCode = Utilities.Utilities.GetStringInput("Enter the Branch IFSCCode  :  ", true),
+                IsMainBranch = false
+            };
+            APIResponse apiresponse = bankservice.AddBranch(branch,bankid);
+            Console.WriteLine("Branch added Successfully");
+        }
+
+
         public void AccountHolderConsole(AccountHolder accountholder)
         {
             IBankService bankservice = (IBankService) new BankService();
+            
             bool menuflag = true;
             while (menuflag)
             {
@@ -419,19 +443,16 @@ namespace BankApplication
                     switch (ch)
                     {
                         case AccountHolderMenu.Deposit:
-                            double amt = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the Amount to Deposit  :  ", true));
-                            string transid = bankservice.Deposit(accountholder, amt);
-                            Console.WriteLine("Transaction Id is  :  " + transid);
+                            this.Deposit(accountholder);
                             break;
                         case AccountHolderMenu.Withdraw:
-                            this.AccountHolderConsoleWithdraw(accountholder);
+                            this.Withdraw(accountholder);
                             break;
                         case AccountHolderMenu.Transfer:
-                            this.AccountHolderConsoleTransfer(accountholder);
+                            this.Transfer(accountholder);
                             break;
                         case AccountHolderMenu.ViewBalance:
-                            double balance = bankservice.ViewBalance(accountholder);
-                            Console.WriteLine("Your Balance is " + balance);
+                            this.ViewBalance();
                             break;
                         case AccountHolderMenu.Exit:
                             accountholder = null;
@@ -452,246 +473,78 @@ namespace BankApplication
 
         }
 
-        public void EmployeeConsoleUpdateAccountHolder()
+        public void UpdateAccountHolder()
         {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
             IAccountHolderService accountholderservice = new AccountHolderService();
-            IBankService bankservice = (IBankService) new BankService();
-            int bankid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Bank Id  :  ", true));
-            Bank bank = bankappdb.Banks.FirstOrDefault(bank => bank.Id == bankid);
+            int bankid = this.ViewAllAccountHolders();
             AccountHolder accountholder = new AccountHolder();
-            if (bank != null )
-            {
-                this.ViewAllAccounts(bankid);
-                int accountNo = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the account number  :  ", true));
-                accountholder.Name = Utilities.Utilities.GetStringInput("Enter the Name to Update  :  ", false);
-                accountholder.PhoneNumber = Convert.ToInt32(Utilities.Utilities.GetPhoneNumber("Enter the Phone Number to Update  :  ", false));
-                accountholder.Address = Utilities.Utilities.GetStringInput("Enter the Address to Update  :  ", false);
-                Status status = accountholderservice.UpdateAccountHolder(accountholder);
-                if(!status.IsSuccess)
-                {
-                    Console.WriteLine(status.Message);
-                    this.EmployeeConsoleUpdateAccountHolder();
-                }
-            }
-            else
-            {
-                Console.WriteLine("Bank not found");
-                this.EmployeeConsoleUpdateAccountHolder();
-            }
-        }
-
-        public void EmployeeConsoleDeleteAccountHolder()
-        {
-            IAccountHolderService accountholderservice = new AccountHolderService();
-            int userid1 = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the userid  :  ", true));
-            Status status = accountholderservice.DeleteAccountHolderAccount(userid1);
+            int accountNo = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the account number  :  ", true));
+            accountholder.Name = Utilities.Utilities.GetStringInput("Enter the Name to Update  :  ", false);
+            accountholder.PhoneNumber = Convert.ToInt32(Utilities.Utilities.GetPhoneNumber("Enter the Phone Number to Update  :  ", false));
+            accountholder.Address = Utilities.Utilities.GetStringInput("Enter the Address to Update  :  ", false);
+            APIResponse status = accountholderservice.UpdateAccountHolder(accountholder);
             if (!status.IsSuccess)
             {
                 Console.WriteLine(status.Message);
-                this.EmployeeConsoleDeleteAccountHolder();
+                this.UpdateAccountHolder();
             }
         }
 
-        public void EmployeeConsoleDeposit()
+        public void DeleteAccountHolder()
         {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IBankService bankservice = (IBankService) new BankService();
             IAccountHolderService accountholderservice = new AccountHolderService();
-            int userid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the userid  :  ", true));
-            AccountHolder accountholder = bankappdb.AccountHolders.FirstOrDefault(_ => _.Id == userid);
-            if (accountholder != null)
+            int userid1 = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the userid  :  ", true));
+            APIResponse status = accountholderservice.DeleteAccountHolderAccount(userid1);
+            if (!status.IsSuccess)
             {
-                double amt = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount to deposit  :  ", true));
-                string transid = bankservice.EmployeeDeposit(accountholder, amt);
-                Console.WriteLine("the transaction id is : " + transid);
-            }
-            else
-            {
-                Console.WriteLine("User not found");
-                this.EmployeeConsoleDeposit();
-            }
-
-        }
-
-        public void EmployeeConsoleWithdraw()
-        {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IBankService bankservice = (IBankService)new BankService();
-            int userid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the userid  :  ", true));
-            AccountHolder accountholder = bankappdb.AccountHolders.FirstOrDefault(account => account.Id == userid);
-            if (accountholder != null)
-            {
-                double amt = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount to withdraw  :  ", true));
-                string transid1 = bankservice.EmployeeWithdraw(accountholder, amt);
-                Console.WriteLine("the transaction id is : " + transid1);
-            }
-            else
-            {
-                Console.WriteLine("User not found");
-                this.EmployeeConsoleWithdraw();
+                Console.WriteLine(status.Message);
+                this.DeleteAccountHolder();
             }
         }
 
-        public void EmployeeConsoleTransfer()
+        public void AddCurrency()
         {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IBankService bankservice = (IBankService)new BankService();
-            Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.Utilities.GetStringInput("What type of transfer you want IMPS/RTGS  :  ", true), true);
-            int srcid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the source user id  :  ", true));
-            AccountHolder accountholder = bankappdb.AccountHolders.FirstOrDefault(account => account.Id == srcid);
-            int destuserid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the destination user id  :  ", true));
-            AccountHolder recevierAccountHolder = bankappdb.AccountHolders.FirstOrDefault(account => account.Id == destuserid);
-            if (accountholder != null && recevierAccountHolder != null)
-            {
-                double amt = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount to transfer  :  ", true));
-                if (accountholder != null)
-                {
-                    if (recevierAccountHolder != null)
-                    {
-                        if (accountholder.BankId == recevierAccountHolder.BankId)
-                        {
-                            if (charge == Charges.RTGS)
-                            {
-                                if (accountholder.Balance <= amt)
-                                {
-                                    Console.WriteLine("You do not have sufficient money");
-                                    this.EmployeeConsoleTransfer();
-                                }
-                            }
-                            else
-                            {
-                                if (accountholder.Balance <= amt + (0.05 * amt))
-                                {
-                                    Console.WriteLine("You do not have sufficient money");
-                                    this.EmployeeConsoleTransfer();
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (charge == Charges.RTGS)
-                            {
-                                if (accountholder.Balance <= amt + (0.02 * amt))
-                                {
-                                    Console.WriteLine("You do not have sufficient money");
-                                    this.EmployeeConsoleTransfer();
-                                }
-                            }
-                            else
-                            {
-                                if (accountholder.Balance <= amt + (0.06 * amt))
-                                {
-                                    Console.WriteLine("You do not have sufficient money");
-                                    this.EmployeeConsoleTransfer();
-                                }
-                            }
-                        }
-                    }
-                }
-                string transid2 = bankservice.EmployeeTransfer(accountholder, recevierAccountHolder, amt, charge);
-                Console.WriteLine("The transaction id is : " + transid2);
-            }
-            else
-            {
-                Console.WriteLine("Users Not found");
-                this.EmployeeConsoleTransfer();
-            }
-        }
-
-
-
-        public void EmployeeConsoleAddCurrency()
-        {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IAccountHolderService accountholderservice = new AccountHolderService();
+            IBankService bankservice = new BankService();
             int bankid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true));
-            Bank bank = bankappdb.Banks.FirstOrDefault(bank => bank.Id == bankid);
-            if (bank != null)
+            string currencycode = Utilities.Utilities.GetStringInput("Enter the Currency Code  :  ", true);
+            double exchangerate = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the Exchange rate  :  ", true));
+            APIResponse status = bankservice.AddCurrency(currencycode, exchangerate, bankid);
+            if (!status.IsSuccess)
             {
-                string currencycode = Utilities.Utilities.GetStringInput("Enter the Currency Code  :  ", true);
-                double exchangerate = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the Exchange rate  :  ", true));
-                Status status = accountholderservice.AddCurrency(currencycode, exchangerate, bank);
-                if(!status.IsSuccess)
-                {
-                    Console.WriteLine(status.Message);
-                    this.EmployeeConsoleAddCurrency();
-                }
-            }
-            else
-            {
-                Console.WriteLine("Bank not found");
-                this.EmployeeConsoleAddCurrency();
+                Console.WriteLine(status.Message);
+                this.AddCurrency();
             }
         }
 
-        public void EmployeeConsoleUpdateCharges()
+        public void UpdateCharges()
         {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
+            IBankService bankservice = new BankService();
+
+            Bank bank = new Bank
+            {
+                Id = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true)),
+                RTGSChargesforSameBank = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the charges for RTGSChargesforSameBank  :  ", false)),
+                RTGSChargesforDifferentBank = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the charges for  RTGSChargesforDifferentBank  :  ", false)),
+                IMPSChargesforSameBank = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the charges for IMPSChargesforSameBank   :  ", false)),
+                IMPSChargesforDifferentBank = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the charges for IMPSChargesforDifferentBank  :  ", false)),  
+            };
+            APIResponse apiresponse = bankservice.UpdateCharges(bank);
+            if(!apiresponse.IsSuccess)
+            {
+                Console.WriteLine(apiresponse.Message);
+                this.UpdateCharges();
+            }
+        }
+
+        public void RevertTransaction(User user)
+        {
             IAccountHolderService accountholderservice = new AccountHolderService();
-            int bankid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true));
-            Bank bank = bankappdb.Banks.FirstOrDefault(bank => bank.Id == bankid);
-            if (bank != null)
+            int transid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the TransactionID  :  ", true));
+            APIResponse apiresponse = accountholderservice.RevertTransaction(user, transid);
+            if (!apiresponse.IsSuccess)
             {
-                bank.RTGSChargesforSameBank = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the charges for RTGSChargesforSameBank  :  ", false));
-                bank.RTGSChargesforDifferentBank = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the charges for  RTGSChargesforDifferentBank  :  ", false));
-                bank.IMPSChargesforSameBank = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the charges for IMPSChargesforSameBank   :  ", false));
-                bank.IMPSChargesforDifferentBank = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the charges for IMPSChargesforDifferentBank  :  ", false));
-                Status status = accountholderservice.UpdateCharges(bank);
-                if(!status.IsSuccess)
-                {
-                    Console.WriteLine(status.Message);
-                    this.EmployeeConsoleUpdateCharges();
-                }
-            }
-            else
-            {
-                Console.WriteLine("Bank not found");
-                this.EmployeeConsoleUpdateCharges();
-            }
-        }
-
-        public bool EmployeeConsoleRevertTransaction()
-        {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            try
-            {
-                IAccountHolderService accountholderservice = new AccountHolderService();
-                int transid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the TransactionID  :  ", true));
-                Bank bank = bankappdb.Banks.FirstOrDefault(bank => bank.AccountHolders.Any(account => account.Transactions.Any(trans => trans.Id == transid)));
-                AccountHolder accountholder = bank != null ? bank.AccountHolders.Find(account => account.Transactions.Any(trans => trans.Id == transid)) : null;
-                Transaction transaction = accountholder != null ? accountholder.Transactions.Find(trans => trans.Id == transid) : null;
-                if (transaction != null)
-                {
-                    accountholderservice.revertTransaction(transaction);
-                    return true;
-                }
-                else
-                {
-                    Console.WriteLine("Transaction not found");
-                    this.EmployeeConsoleRevertTransaction();
-                    return true;
-                }
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        public void EmployeeConsoleViewTransactions()
-        {
-            BankApplicationDbContext bankdbapp = new BankApplicationDbContext();
-            int userid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the userid  :  ", true));
-            AccountHolder accountholder = bankdbapp.AccountHolders.FirstOrDefault(_=>_.Id == userid);
-            if (accountholder != null)
-            {
-                this.BankServiceViewTransactions();
-            }
-            else
-            {
-                Console.WriteLine("Account Holder Not found");
-                this.EmployeeConsoleViewTransactions();
+                Console.WriteLine(apiresponse.Message);
+                this.RevertTransaction(user);
             }
         }
 
@@ -715,31 +568,31 @@ namespace BankApplication
                             Console.WriteLine("The Account Holder Is  :  " + accountholderid);
                             break;
                         case EmployeeMenu.UpdateAccountHolder:
-                            this.EmployeeConsoleUpdateAccountHolder();
+                            this.UpdateAccountHolder();
                             break;
                         case EmployeeMenu.DeleteAccountHolder:
-                            this.EmployeeConsoleDeleteAccountHolder();
+                            this.DeleteAccountHolder();
                             break;
                         case EmployeeMenu.Deposit:
-                            this.EmployeeConsoleDeposit();
+                            this.Deposit(employee);
                             break;
                         case EmployeeMenu.Withdraw:
-                            this.EmployeeConsoleWithdraw();
+                            this.Withdraw(employee);
                             break;
                         case EmployeeMenu.Transfer:
-                            this.EmployeeConsoleTransfer();
+                            this.Transfer(employee);
                             break;
                         case EmployeeMenu.RevertTransaction:
-                            this.EmployeeConsoleRevertTransaction();
+                            this.RevertTransaction(employee);
                             break;
                         case EmployeeMenu.ViewTransactions:
-                            this.EmployeeConsoleViewTransactions();
+                            this.ViewTransactions();
                             break;
                         case EmployeeMenu.AddCurrency:
-                            this.EmployeeConsoleAddCurrency();
+                            this.AddCurrency();
                             break;
                         case EmployeeMenu.UpdateCharges:
-                            this.EmployeeConsoleUpdateCharges();
+                            this.UpdateCharges();
                             break;
                         case EmployeeMenu.Exit:
                             employee = null;
@@ -758,255 +611,44 @@ namespace BankApplication
             }
         }
 
-        public void AdminConsoleUpdateEmployee()
+        public void UpdateEmployee()
         {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
             IEmployeeService employeeservice = new EmployeeService();
-            IBankService bankservice = (IBankService)new BankService();
-            int bankid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Bank Id  :  ", true));
-            Bank bank = bankappdb.Banks.FirstOrDefault(b => b.Id == bankid);
-            if(bank != null)
+            this.ViewAllEmployees();
+            Employee employee = new Employee();
+            employee.Id = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the employee id  :  ", true));
+            employee.Name = Utilities.Utilities.GetStringInput("Enter the Name to Update  :  ", false);
+            employee.PhoneNumber = Convert.ToInt32(Utilities.Utilities.GetPhoneNumber("Enter the Phone Number to Update  :  ", false));
+            employee.Address = Utilities.Utilities.GetStringInput("Enter the Address to Update  :  ", false);
+            APIResponse status = employeeservice.UpdateEmployee(employee);
+            if (!status.IsSuccess)
             {
-                this.ViewAllEmployees(bankid);
-                Employee employee = new Employee();
-                employee.Id = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the employee id  :  ", true));
-                employee.Name = Utilities.Utilities.GetStringInput("Enter the Name to Update  :  ", false);
-                employee.PhoneNumber = Convert.ToInt32(Utilities.Utilities.GetPhoneNumber("Enter the Phone Number to Update  :  ", false));
-                employee.Address = Utilities.Utilities.GetStringInput("Enter the Address to Update  :  ", false);
-                Status status = employeeservice.UpdateEmployee(employee);
-                if (!status.IsSuccess)
-                {
-                    Console.WriteLine(status.Message);
-                    this.AdminConsoleUpdateEmployee();
-                }
-            }
-            else
-            {
-                Console.WriteLine("Bank not found");
-                this.AdminConsoleUpdateEmployee();
+                Console.WriteLine(status.Message);
+                this.UpdateEmployee();
             }
         }
 
-        public void AdminConsoleDeleteEmployee()
+        public void DeleteEmployee()
         {
             IEmployeeService employeeservice = new EmployeeService();
             int employeeid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the employeeid  :  ", true));
-            Status status = employeeservice.DeleteEmployee(employeeid);
+            APIResponse status = employeeservice.DeleteEmployee(employeeid);
             if (!status.IsSuccess)
             {
                 Console.WriteLine(status.Message);
-                this.AdminConsoleDeleteEmployee();
+                this.DeleteEmployee();
             }
         }
 
-        public void AdminConsoleUpdateAccountHolder()
+        public void DeleteBranch()
         {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IEmployeeService employeeservice = new EmployeeService();
-            BankService bankservice = new BankService();
-            int bankid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true));
-            Bank bank = bankappdb.Banks.FirstOrDefault(bank => bank.Id == bankid);
-            AccountHolder accountholder = new AccountHolder();
-            if (bank != null)
+            IBankService bankservice = new BankService();
+            int branchid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the branch id  :  ", true));
+            APIResponse apiresponse = bankservice.DeleteBranch(branchid);
+            if(!apiresponse.IsSuccess)
             {
-                this.ViewAllAccounts(bankid);
-                accountholder.Id = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the account number  :  ", true));
-                accountholder.Name = Utilities.Utilities.GetStringInput("Enter the Name to Update  :  ", false);
-                accountholder.PhoneNumber = Utilities.Utilities.GetPhoneNumber("Enter the Phone Number to Update  :  ", false);
-                accountholder.Address = Utilities.Utilities.GetStringInput("Enter the Address to Update  :  ", false);
-                Status status = employeeservice.UpdateAccountHolder(accountholder);
-                if(!status.IsSuccess)
-                {
-                    Console.WriteLine(status.Message);
-                    this.AdminConsoleUpdateAccountHolder();
-                }
-            }
-            else
-            {
-                Console.WriteLine("Bank not found");
-                this.AdminConsoleUpdateAccountHolder();
-            }
-        }
-
-        public void AdminConsoleDeleteAccountHolder()
-        {
-            IEmployeeService employeeservice = new EmployeeService();
-            int userid1 = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the userid  :  ", true));
-            Status status = employeeservice.DeleteAccountHolderAccount(userid1);
-            if (!status.IsSuccess)
-            {
-                Console.WriteLine(status.Message);
-                this.AdminConsoleDeleteAccountHolder();
-            }
-        }
-
-        public void AdminConsoleDeposit()
-        {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IBankService bankservice = (IBankService)new BankService();
-            int userid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the userid  :  ", true));
-            AccountHolder accountholder = bankappdb.AccountHolders.FirstOrDefault(account => account.Id == userid);
-            if (accountholder != null)
-            {
-                double amt = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount to deposit  :  ", true));
-                string transid = bankservice.EmployeeDeposit(accountholder, amt);
-                Console.WriteLine("the transaction id is : " + transid);
-            }
-            else
-            {
-                Console.WriteLine("User not found");
-                this.AdminConsoleDeposit();
-            }
-
-        }
-
-        public void AdminConsoleWithdraw()
-        {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IBankService bankservice = (IBankService)new BankService();
-            int userid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the userid  :  ", true));
-            AccountHolder accountholder = bankappdb.AccountHolders.FirstOrDefault(account => account.Id == userid);
-            if (accountholder != null)
-            {
-                double amt1 = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount to withdraw  :  ", true));
-                string transid1 = bankservice.EmployeeWithdraw(accountholder, amt1);
-                Console.WriteLine("the Transaction id is : " + transid1);
-            }
-            else
-            {
-                Console.WriteLine("User not found");
-                this.AdminConsoleWithdraw();
-            }
-        }
-
-        public void AdminConsoleTransfer()
-        {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IBankService bankservice = (IBankService)new BankService();
-            Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.Utilities.GetStringInput("What type of transfer you want IMPS/RTGS", true), true);
-            int srcid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the source user id  :  ", true));
-            AccountHolder accountholder = bankappdb.AccountHolders.FirstOrDefault(account => account.Id == srcid);
-            int destuserid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the destination user id  :  ", true));
-            AccountHolder recevierAccountHolder = bankappdb.AccountHolders.FirstOrDefault(account => account.Id == destuserid);
-            if (accountholder != null && recevierAccountHolder != null)
-            {
-                double amt = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the amount to transfer  :  ", true));
-                if (accountholder != null)
-                {
-                    if (recevierAccountHolder != null)
-                    {
-                        if (accountholder.BankId == recevierAccountHolder.BankId)
-                        {
-                            if (charge == Charges.RTGS)
-                            {
-                                if (accountholder.Balance <= amt)
-                                {
-                                    Console.WriteLine("You do not have sufficient money");
-                                    this.AdminConsoleTransfer();
-                                }
-                            }
-                            else
-                            {
-                                if (accountholder.Balance <= amt + (0.05 * amt))
-                                {
-                                    Console.WriteLine("You do not have sufficient money");
-                                    this.AdminConsoleTransfer();
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (charge == Charges.RTGS)
-                            {
-                                if (accountholder.Balance <= amt + (0.02 * amt))
-                                {
-                                    Console.WriteLine("You do not have sufficient money");
-                                    this.AdminConsoleTransfer();
-                                }
-                            }
-                            else
-                            {
-                                if (accountholder.Balance <= amt + (0.06 * amt))
-                                {
-                                    Console.WriteLine("You do not have sufficient money");
-                                    this.AdminConsoleTransfer();
-                                }
-                            }
-                        }
-                    }
-                }
-                string transid2 = bankservice.EmployeeTransfer(accountholder, recevierAccountHolder, amt, charge);
-                Console.WriteLine("The transaction id is : " + transid2);
-            }
-            else
-            {
-                Console.WriteLine("User not found");
-                this.AdminConsoleTransfer();
-            }
-        }
-
-        public void AdminConsoleAddCurrency()
-        {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IEmployeeService employeeservice = new EmployeeService();
-            int bankid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true));
-            Bank bank = bankappdb.Banks.FirstOrDefault(bank => bank.Id == bankid);
-            if (bank != null)
-            {
-                string currencycode = Utilities.Utilities.GetStringInput("Enter the Currency Code  :  ", true);
-                double exchangerate = Convert.ToDouble(Utilities.Utilities.GetStringInput("Enter the Exchange rate  :  ", true));
-                Status status = employeeservice.AddCurrency(currencycode, exchangerate,bank);
-                if(!status.IsSuccess)
-                {
-                    Console.WriteLine(status.Message);
-                    this.AdminConsoleAddCurrency();
-                }
-            }
-            else
-            {
-                Console.WriteLine("Bank not found");
-                this.AdminConsoleAddCurrency();
-            }
-        }
-
-        public void AdminConsoleDeleteBranch()
-        {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IEmployeeService employeeservice = new EmployeeService();
-            int branchid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Branch id to Delete  :  ", true));
-            Branch branch = bankappdb.Branches.FirstOrDefault(branch => branch.Id == branchid);
-            if (branch != null)
-            {
-                employeeservice.DeleteBranch(branch);
-                Console.WriteLine("Branch Deleted Successfully");
-            }
-            else
-            {
-                Console.WriteLine("Branch not found");
-                this.AdminConsoleDeleteBranch();
-            }
-
-        }
-
-        public void AdminConsoleRevertTransaction()
-        {
-            BankApplicationDbContext bankappdb = new BankApplicationDbContext();
-            IEmployeeService employeeservice = new EmployeeService();
-            int transid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the TransactionID  :  ", true));
-            Transaction transaction = bankappdb.Transactions.FirstOrDefault(trans => trans.Id == transid);
-            if (transaction != null)
-            {
-                Status status = employeeservice.revertTransaction(transid);
-                if(!status.IsSuccess)
-                {
-                    Console.WriteLine(status.Message);
-                    this.AdminConsoleRevertTransaction();
-                }
-            }
-            else
-            {
-                Console.WriteLine("Transaction not found");
-                this.AdminConsoleRevertTransaction();
+                Console.WriteLine(apiresponse.Message);
+                this.DeleteBranch();
             }
         }
 
@@ -1030,53 +672,41 @@ namespace BankApplication
                             Console.WriteLine("The Employee Id is  :  " + employeeid);
                             break;
                         case AdminMenu.UpdateEmployee:
-                            this.AdminConsoleUpdateEmployee();
+                            this.UpdateEmployee();
                             break;
                         case AdminMenu.DeleteEmployee:
-                            this.AdminConsoleDeleteEmployee();
+                            this.DeleteEmployee();
                             break;
                         case AdminMenu.CreateAccountHolder:
                             string accountholderid = this.AccountHolderRegistration();
                             Console.WriteLine("The Account Holder Id is  :  " + accountholderid);
                             break;
                         case AdminMenu.UpdateAccountHolder:
-                            this.AdminConsoleUpdateAccountHolder();
+                            this.UpdateAccountHolder();
                             break;
                         case AdminMenu.DeleteAccountHolder:
-                            this.AdminConsoleDeleteAccountHolder();
+                            this.DeleteAccountHolder();
                             break;
                         case AdminMenu.Deposit:
-                            this.AdminConsoleDeposit();
+                            this.Deposit(admin);
                             break;
                         case AdminMenu.Withdraw:
-                            this.AdminConsoleWithdraw();
+                            this.Withdraw(admin);
                             break;
                         case AdminMenu.Transfer:
-                            this.AdminConsoleTransfer();
+                            this.Transfer(admin);
                             break;
                         case AdminMenu.RevertTransaction:
-                            this.AdminConsoleRevertTransaction();
+                            this.RevertTransaction(admin);
                             break;
                         case AdminMenu.AddBranch:
-                            int bankid = Convert.ToInt32(Utilities.Utilities.GetStringInput("Enter the Bank id  :  ", true));
-                            Bank bank = bankappdb.Banks.FirstOrDefault(bank => bank.Id == bankid);
-
-                            Branch branch = new Branch()
-                            {
-                                Name = Utilities.Utilities.GetStringInput("Enter the Branch Name  :  ", true),
-                                Address = Utilities.Utilities.GetStringInput("Enter the Branch Address  :  ", true),
-                                IFSCCode = Utilities.Utilities.GetStringInput("Enter the Branch IFSCCode  :  ", true),
-                                BankId = bank.Id,
-                                IsMainBranch = false
-                            };
-                            employeeservice.AddBranch(branch);
-                            Console.WriteLine("Branch added Successfully");
+                            this.AddBranch();
                             break;
                         case AdminMenu.DeleteBranch:
-                            this.AdminConsoleDeleteBranch();
+                            this.DeleteBranch();
                             break;
                         case AdminMenu.AddCurrency:
-                            this.AdminConsoleAddCurrency();
+                            this.AddCurrency();
                             break;
                         case AdminMenu.Exit:
                             admin = null;

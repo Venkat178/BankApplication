@@ -6,7 +6,7 @@ namespace BankApplication.Concerns
     {
         public Employee AdminLogin(int employeeid, string password);
         public Employee EmployeeLogin(int employeeid, string password);
-        public AccountHolder Login(int userid, string password);
-        public string ResetPassword(int userid);
+        public AccountHolder AccountHolderLogin(int userid, string password);
+        public APIResponse ResetPassword(int userid);
     }
 }

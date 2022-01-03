@@ -2,6 +2,7 @@
 using BankApplication.Models;
 using BankApplication.Concerns;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace BankApplication.Services
 {
@@ -14,9 +15,9 @@ namespace BankApplication.Services
             BankAppDbctx = new BankApplicationDbContext();
         }
 
-        public Status SetUpBank(Branch branch,Bank bank, Employee admin)
+        public APIResponse SetUpBank(Branch branch, Bank bank, Employee admin)
         {
-            Status status = new Status();
+            APIResponse status = new APIResponse();
             try
             {
                 branch.IsMainBranch = true;
@@ -25,19 +26,19 @@ namespace BankApplication.Services
                 admin.BranchId = bank.Id;
                 admin.EmployeeId = admin.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
                 admin.Role = "Admin";
-                
+
 
                 BankAppDbctx.Banks.Add(bank);
                 BankAppDbctx.SaveChanges();
-                
+
                 branch.Bank = bank;
                 branch.BankId = bank.Id;
-                
+
                 BankAppDbctx.Branches.Add(branch);
                 BankAppDbctx.SaveChanges();
-                
+
                 admin.Bank = bank;
-                admin.BankId = bank.Id; 
+                admin.BankId = bank.Id;
                 admin.BranchId = branch.Id;
 
                 BankAppDbctx.Employees.Add(admin);
@@ -54,197 +55,237 @@ namespace BankApplication.Services
             return status;
         }
 
-        public Status Register(Bank bank, AccountHolder AccountHolder)
+        public APIResponse AddCurrency(string currencyCode, double exchangeRate, int bankid)
         {
-            if (BankAppDbctx.AccountHolders.Any(p => p.Name == AccountHolder.Name) == true)
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(_=>_.Id == bankid);
+            if(bank != null)
             {
-                return new Status() { IsSuccess = false, Message = "Account already exists!" };
+                BankAppDbctx.CurrencyCodes.Add(new CurrencyCode() { Id = bank.CurrencyCodes.Count + 1, Code = "currencyCode", ExchangeRate = exchangeRate, IsDefault = false });
+                BankAppDbctx.SaveChanges();
+                return new APIResponse() { IsSuccess = true, Message = "Successfully added" };
             }
-            AccountHolder.Type = UserType.AccountHolder;
-            BankAppDbctx.AccountHolders.Add(AccountHolder);
-            BankAppDbctx.SaveChanges();
-            return new Status() { IsSuccess = true, Message = "Account Created successfully...!" };
+            return new APIResponse() { IsSuccess = false, Message = "Bank not found" };
         }
 
-        public string EmployeeRegister(Employee employee)
+        public APIResponse UpdateCharges(Bank bank1)
         {
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(_ => _.Id == bank1.Id);
+            if (bank != null)
+            {
+                Bank oldbank = BankAppDbctx.Banks.FirstOrDefault(bank => bank.Id == bank.Id);
+                bank.RTGSChargesforSameBank = bank.RTGSChargesforSameBank == default(int) ? oldbank.RTGSChargesforSameBank : bank.RTGSChargesforSameBank;
+                bank.RTGSChargesforDifferentBank = bank.RTGSChargesforDifferentBank == default(int) ? oldbank.RTGSChargesforDifferentBank : bank.RTGSChargesforDifferentBank;
+                bank.IMPSChargesforSameBank = bank.IMPSChargesforSameBank == default(int) ? oldbank.IMPSChargesforSameBank : bank.IMPSChargesforSameBank;
+                bank.IMPSChargesforDifferentBank = bank.IMPSChargesforDifferentBank == default(int) ? oldbank.IMPSChargesforDifferentBank : bank.IMPSChargesforDifferentBank;
+                BankAppDbctx.SaveChanges();
+                return new APIResponse() { IsSuccess = true, Message = "Successfully updated" };
+            }
+            return new APIResponse() { IsSuccess = false, Message = "Bank not found" };
+        }
+
+        public APIResponse AddBranch(Branch branch,int bankid)
+        {
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(_=>_.Id == bankid);
+            if(bank != null)
+            {
+                try
+                {
+                    BankAppDbctx.Branches.Add(branch);
+                    BankAppDbctx.SaveChanges();
+                    return new APIResponse() { IsSuccess = true, Message = "Successfully Added Branch" };
+                }
+                catch (Exception)
+                {
+                    return new APIResponse() { IsSuccess = false, Message = "Error occured while adding branch.Try again" };
+                }
+            }
+            return new APIResponse() { IsSuccess = false, Message = "Error occured while adding branch.Try again" };
+        }
+
+        public APIResponse DeleteBranch(int branchid)
+        {
+            Branch branch = BankAppDbctx.Branches.FirstOrDefault(_ => _.Id == branchid);
             try
             {
-                employee.Type = UserType.Employee;
-                employee.EmployeeId = employee.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
-                BankAppDbctx.Employees.Add(employee);
-                BankAppDbctx.SaveChanges();
-                return employee.EmployeeId;
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex.InnerException.Message);
-                return null;
-            }
-        }
-
-        public string Deposit(AccountHolder accountholder, double amt)
-        {
-            Transaction transaction = new Transaction()
-            {
-                SrcAccId = accountholder.Id,
-                DestAccId = accountholder.Id,
-                Amount = amt,
-                CreatedBy = accountholder.Id,
-                CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss"),
-                TransactionId = "TXN" + accountholder.Id + accountholder.Id + accountholder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
-                Type = TransactionType.Credit
-            };
-            accountholder.Balance += amt;
-            BankAppDbctx.Transactions.Add(transaction);
-            BankAppDbctx.SaveChanges();
-            return transaction.TransactionId;
-        }
-
-        public string Withdraw(AccountHolder AccountHolder, double amt)
-        {
-            string txnid = "TXN";
-            if (AccountHolder.Balance >= amt)
-            {
-                AccountHolder.Balance -= amt;
-                Transaction transaction = new Transaction()
+                if (branch != null)
                 {
-                    SrcAccId = AccountHolder.Id,
-                    DestAccId = AccountHolder.Id,
-                    Amount = amt,
-                    CreatedBy = AccountHolder.Id,
-                    CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss"),
-                    TransactionId = "TXN" + AccountHolder.Id + AccountHolder.Id + AccountHolder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
-                    Type = TransactionType.Debit
-            };
-                
-                BankAppDbctx.Transactions.Add(transaction);
-                BankAppDbctx.SaveChanges();
-                txnid = transaction.TransactionId;
-            }
-            return txnid;
-        }
-
-        public string Transfer(AccountHolder AccountHolder,AccountHolder recevierAccountHolder, double amt,Charges charge)
-        {
-            string txnid = "TXN";
-            Transaction transaction = new Transaction();
-            if (recevierAccountHolder != null)
-            {
-                recevierAccountHolder.Balance += amt;
-                transaction.SrcAccId = AccountHolder.Id;
-                transaction.DestAccId = recevierAccountHolder.Id;
-                transaction.Amount = amt;
-                transaction.CreatedBy = AccountHolder.Id;
-                transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
-                transaction.TransactionId = "TXN" + AccountHolder.Id + recevierAccountHolder.Id + AccountHolder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
-                transaction.Type = TransactionType.Transfer;
-                txnid = transaction.TransactionId;
-                if (AccountHolder.BankId == recevierAccountHolder.BankId)
-                {
-                    AccountHolder.Balance = charge == Charges.RTGS ? (AccountHolder.Balance >= amt ? AccountHolder.Balance - amt : 0) : (AccountHolder.Balance >= amt + (0.05 * amt) ? AccountHolder.Balance - (amt + (0.05 * amt)) : 0);
-                    BankAppDbctx.Transactions.Add(transaction);
+                    BankAppDbctx.Branches.Remove(branch);
                     BankAppDbctx.SaveChanges();
+                    return new APIResponse() { IsSuccess = true, Message = "Successfully deleted" };
                 }
                 else
                 {
-                    AccountHolder.Balance = charge == Charges.RTGS ? (AccountHolder.Balance >= amt + (0.02 * amt) ? AccountHolder.Balance - (amt + (0.02 * amt)) : 0) : (AccountHolder.Balance >= amt + (0.06 * amt) ? AccountHolder.Balance -= (amt + (0.06 * amt)) : 0);
-                    BankAppDbctx.Transactions.Add(transaction);
-                    BankAppDbctx.SaveChanges();
+                    Console.WriteLine("Branch not found");
+                    return new APIResponse() { IsSuccess = false, Message = "Branch ot found" };
                 }
             }
-            return txnid;
-        }
-
-        public AccountHolder GetAccountHolder(int accountid)
-        {
-            AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(account => account.Id == accountid);
-            return accountholder;
-        }
-
-        public Employee GetEmployee(int employeeid,int bankid)
-        {
-            Employee employee = BankAppDbctx.Employees.FirstOrDefault(employee => employee.Id == employeeid && employee.Type == UserType.Employee);
-            return employee;
-        }
-
-        public double ViewBalance(AccountHolder AccountHolder)
-        {
-            return AccountHolder.Balance;
-        }
-
-        public string EmployeeDeposit(AccountHolder accountholder, double amt)
-        {
-            Transaction transaction = new Transaction()
+            catch (Exception)
             {
-                SrcAccId = accountholder.Id,
-                DestAccId = accountholder.Id,
-                Amount = amt,
-                CreatedBy = accountholder.Id,
-                CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss"),
-                TransactionId = "TXN" + accountholder.Id + accountholder.Id + accountholder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
-                Type = TransactionType.Credit
-            };
-            accountholder.Balance += amt;
-            BankAppDbctx.Transactions.Add(transaction);
-            BankAppDbctx.AccountHolders.Update(accountholder);
-            BankAppDbctx.SaveChanges();
-            return transaction.TransactionId;
+                return new APIResponse() { IsSuccess = false, Message = "Error occured while deleting branch.Try again" };
+            }
+
         }
 
-        public string EmployeeWithdraw(AccountHolder AccountHolder, double amt)
+        public APIResponse Deposit(User user, int accountid, double amt)
         {
-            if (AccountHolder.Balance >= amt)
+            AccountHolderService accountholderservice = new AccountHolderService();
+            if (accountholderservice.IsExitAccountHolder(accountid))
             {
-                AccountHolder.Balance -= amt;
+                AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(a => a.Id == accountid);
                 Transaction transaction = new Transaction()
                 {
-                    SrcAccId = AccountHolder.Id,
-                    DestAccId = AccountHolder.Id,
+                    SrcAccId = accountid,
+                    DestAccId = accountid,
                     Amount = amt,
-                    CreatedBy = AccountHolder.Id,
+                    CreatedBy = user.Id,
                     CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss"),
-                    TransactionId = "TXN" + AccountHolder.Id + AccountHolder.Id + AccountHolder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
-                    Type = TransactionType.Debit
+                    TransactionId = "TXN" + user.Id + user.Id + user.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                    Type = TransactionType.Credit
                 };
+                accountholder.Balance += amt;
+                BankAppDbctx.AccountHolders.Update(accountholder);
                 BankAppDbctx.Transactions.Add(transaction);
-                BankAppDbctx.AccountHolders.Update(AccountHolder);
                 BankAppDbctx.SaveChanges();
-                return transaction.TransactionId;
+                return new APIResponse { IsSuccess = true, Message = "Deposited Successfully" };
             }
-            return null;
+            else
+            {
+                return new APIResponse { IsSuccess = false, Message = "AccountHolder not found" };
+            }
         }
 
-        public string EmployeeTransfer(AccountHolder AccountHolder, AccountHolder recevierAccountHolder, double amt, Charges charge)
+        public APIResponse Withdraw(User user, int accountid, double amt)
         {
-            Transaction transaction = new Transaction();
-            if (AccountHolder != null && recevierAccountHolder != null)
+            AccountHolderService accountholderservice = new AccountHolderService();
+            if (accountholderservice.IsExitAccountHolder(accountid))
             {
-                recevierAccountHolder.Balance += amt;
-                transaction.SrcAccId = AccountHolder.Id;
-                transaction.DestAccId = recevierAccountHolder.Id;
-                transaction.Amount = amt;
-                transaction.CreatedBy = AccountHolder.Id;
-                transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
-                transaction.TransactionId = "TXN" + AccountHolder.Id + recevierAccountHolder.Id + AccountHolder.BankId + DateTime.Now.ToString("yyyyMMddHHmmss");
-                transaction.Type = TransactionType.Transfer;
-
-                if (AccountHolder.BankId == recevierAccountHolder.BankId)
+                AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(a => a.Id == accountid);
+                if (accountholder.Balance >= amt)
                 {
-                    AccountHolder.Balance = charge == Charges.RTGS ? (AccountHolder.Balance >= amt ? AccountHolder.Balance - amt : 0) : (AccountHolder.Balance >= amt + (0.05 * amt) ? AccountHolder.Balance - (amt + (0.05 * amt)) : 0);
+                    Transaction transaction = new Transaction()
+                    {
+                        SrcAccId = accountid,
+                        DestAccId = accountid,
+                        Amount = amt,
+                        CreatedBy = user.Id,
+                        CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss"),
+                        TransactionId = "TXN" + user.Id + user.Id + user.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                        Type = TransactionType.Credit
+                    };
+                    accountholder.Balance -= amt;
+                    BankAppDbctx.AccountHolders.Update(accountholder);
                     BankAppDbctx.Transactions.Add(transaction);
                     BankAppDbctx.SaveChanges();
-                    return transaction.TransactionId;
+                    return new APIResponse { IsSuccess = true, Message = "Withdraw Successfull" };
+                }
+            }
+            return new APIResponse { IsSuccess = false, Message = "AccountHolder not found" };
+        }
+
+        public APIResponse Transfer(User user, int srcid, int destid, double amt, Charges charge)
+        {
+            AccountHolderService accountholderservice = new AccountHolderService();
+            if (accountholderservice.IsExitAccountHolder(srcid) && accountholderservice.IsExitAccountHolder(destid))
+            {
+                AccountHolder srcaccountholder = BankAppDbctx.AccountHolders.FirstOrDefault(a => a.Id == srcid);
+                AccountHolder destaccountholder = BankAppDbctx.AccountHolders.FirstOrDefault(a => a.Id == destid);
+                Transaction transaction = new Transaction()
+                {
+                    SrcAccId = srcid,
+                    DestAccId = destid,
+                    Amount = amt,
+                    CreatedBy = user.Id,
+                    CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss"),
+                    TransactionId = "TXN" + user.Id + user.Id + user.BankId + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                    Type = TransactionType.Transfer
+                };
+                if (srcaccountholder.BankId == destaccountholder.BankId)
+                {
+                    if(charge == Charges.RTGS)
+                    {
+                        if(srcaccountholder.Balance >= amt)
+                        {
+                            srcaccountholder.Balance = srcaccountholder.Balance - amt;
+                            BankAppDbctx.AccountHolders.Update(srcaccountholder);
+                            BankAppDbctx.Transactions.Add(transaction);
+                            BankAppDbctx.SaveChanges();
+                            return new APIResponse { Message = "Transfered successfull", IsSuccess = true };
+                        }
+                        else
+                        {
+                            return new APIResponse { Message = "No sufficient Balance", IsSuccess = false };
+                        }
+                    }
+                    else
+                    {
+                        if(srcaccountholder.Balance >= amt + (0.05 * amt))
+                        {
+                            srcaccountholder.Balance = srcaccountholder.Balance - (amt + (0.05 * amt));
+                            BankAppDbctx.AccountHolders.Update(srcaccountholder);
+                            BankAppDbctx.Transactions.Add(transaction);
+                            BankAppDbctx.SaveChanges();
+                            return new APIResponse { Message = "Transfered successfull", IsSuccess = true };
+                        }
+                        else
+                        {
+                            return new APIResponse { Message = "No sufficient Balance", IsSuccess = false };
+                        }
+                    }
                 }
                 else
                 {
-                    AccountHolder.Balance = charge == Charges.RTGS ? (AccountHolder.Balance >= amt + (0.02 * amt) ? AccountHolder.Balance - (amt + (0.02 * amt)) : 0) : (AccountHolder.Balance >= amt + (0.06 * amt) ? AccountHolder.Balance -= (amt + (0.06 * amt)) : 0);
-                    BankAppDbctx.Transactions.Add(transaction);
-                    BankAppDbctx.SaveChanges();
-                    return transaction.TransactionId;
+                    if(charge == Charges.RTGS)
+                    {
+                        if(srcaccountholder.Balance >= amt + (0.02 * amt))
+                        {
+                            srcaccountholder.Balance = srcaccountholder.Balance - (amt + (0.02 * amt));
+                            BankAppDbctx.AccountHolders.Update(srcaccountholder);
+                            BankAppDbctx.Transactions.Add(transaction);
+                            BankAppDbctx.SaveChanges();
+                            return new APIResponse { Message = "Transfered successfull", IsSuccess = true };
+                        }
+                        else
+                        {
+                            return new APIResponse { Message = "No sufficient Balance", IsSuccess = false };
+                        }
+                    }
+                    else
+                    {
+                        if(srcaccountholder.Balance >= amt + (0.06 * amt))
+                        {
+                            srcaccountholder.Balance = srcaccountholder.Balance -= (amt + (0.06 * amt));
+                            BankAppDbctx.AccountHolders.Update(srcaccountholder);
+                            BankAppDbctx.Transactions.Add(transaction);
+                            BankAppDbctx.SaveChanges();
+                            return new APIResponse { Message = "Transfered successfull", IsSuccess = true };
+                        }
+                        else
+                        {
+                            return new APIResponse { Message = "No sufficient Balance", IsSuccess = false };
+                        }
+                    }
                 }
+                destaccountholder.Balance += amt;
+                BankAppDbctx.AccountHolders.Update(destaccountholder);
+                BankAppDbctx.Transactions.Add(transaction);
+                BankAppDbctx.SaveChanges();
+                return new APIResponse { IsSuccess = true, Message = "Transfered Successfull" };
             }
-            return null;
+            else
+            {
+                return new APIResponse { IsSuccess = false, Message = "Users not found" };
+            }
+
+        }
+
+        public APIResponse ViewAllBranches(int bankid)
+        {
+            Bank bank = BankAppDbctx.Banks.FirstOrDefault(_ => _.Id == bankid);
+            if (bank != null)
+            {
+                return new APIResponse { BranchList = BankAppDbctx.Branches.Where(_ => _.BankId == bankid).ToList(), IsSuccess = true };
+            }
+            return new APIResponse { Message = "Bank not found", IsSuccess = false };
         }
     }
 }

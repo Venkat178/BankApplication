@@ -4,15 +4,11 @@ namespace BankApplication.Concerns
 {
     public interface IEmployeeService
     {
-        public Status UpdateEmployee(Employee employee);
-        public Status DeleteEmployee(int employeeid);
-        public Status UpdateAccountHolder(AccountHolder accountholder);
-        public Status DeleteAccountHolderAccount(int userid);
-        public Status revertTransaction(int transId);
-        public Status AddBranch(Branch branch);
-        public Status DeleteBranch(Branch branch);
-        public Status AddCurrency(string currencyCode, double exchangeRate,Bank bank);
-        public bool UpdateCharges(Bank bank);
-
+        public APIResponse CreateEmployee(Employee employee,int branchid);
+        public APIResponse UpdateEmployee(Employee employee);
+        public APIResponse DeleteEmployee(int employeeid);
+        public Employee GetEmployee(int employeeid);
+        public APIResponse ViewAllEmployees(int bankid);
+        public bool IsExitEmployee(int employeeid);
     }
 }
