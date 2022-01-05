@@ -9,7 +9,7 @@ namespace BankApplication.Services
     public class BankService : IBankService
     {
         public BankApplicationDbContext BankAppDbctx;
-        private IAccountHolderService accountholderservice;
+        private readonly IAccountHolderService accountholderservice;
 
         public BankService(IAccountHolderService accountholderservice)
         {
@@ -139,7 +139,6 @@ namespace BankApplication.Services
         {
             try
             {
-                //AccountHolderService accountholderservice = new AccountHolderService();
                 if (accountholderservice.IsExitAccountHolder(accountid))
                 {
                     AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(a => a.Id == accountid);
@@ -166,7 +165,6 @@ namespace BankApplication.Services
         {
             try
             {
-                AccountHolderService accountholderservice = new AccountHolderService();
                 if (accountholderservice.IsExitAccountHolder(accountid))
                 {
                     AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(a => a.Id == accountid);
@@ -193,7 +191,6 @@ namespace BankApplication.Services
         {
             try
             {
-                AccountHolderService accountholderservice = new AccountHolderService();
                 if (accountholderservice.IsExitAccountHolder(transaction1.SrcAccId) && accountholderservice.IsExitAccountHolder(transaction1.DestAccId))
                 {
                     AccountHolder srcaccountholder = BankAppDbctx.AccountHolders.FirstOrDefault(a => a.Id == transaction1.SrcAccId);
