@@ -1,21 +1,16 @@
 ﻿using System.Collections.Generic;
+
 namespace BankApplication.Models
 {
-    public class APIResponse
+    public class APIResponse<T>
     {
         public APIResponse()
         {
-            BranchList = new List<Branch>();
-            AccountHolderList = new List<AccountHolder>();
-            EmployeeList = new List<Employee>();
-            TransactionList = new List<Transaction>();
+            list = new List<T>();
         }
         public bool IsSuccess { get; set; }
         public string Message { get; set; }
-        public List<Branch> BranchList { get; set; }
-        public List<AccountHolder> AccountHolderList { get; set; }
-        public List<Employee> EmployeeList { get; set; }
-        public List<Transaction> TransactionList { get; set; }
+        public List<T> list { get; set; }
     }
 
 }

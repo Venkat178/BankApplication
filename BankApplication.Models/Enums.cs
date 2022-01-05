@@ -28,6 +28,7 @@
         ViewTransactions,
         AddCurrency,
         UpdateCharges,
+        ResetPassword,
         Exit
     }
 
@@ -47,6 +48,7 @@
         DeleteBranch,
         AddCurrency,
         UpdateCharges,
+        ResetPassword,
         Exit
     }
 

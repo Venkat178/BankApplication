@@ -4,14 +4,14 @@ namespace BankApplication.Concerns
 {
     public interface IAccountHolderService
     {
-        public APIResponse CreateAccountHolder(AccountHolder accountholder, int branchid);
-        public APIResponse UpdateAccountHolder(AccountHolder accountholder);
-        public APIResponse DeleteAccountHolderAccount(int userid);
-        public APIResponse RevertTransaction(User user, int transid);
+        public APIResponse<AccountHolder> CreateAccountHolder(AccountHolder accountholder);
+        public APIResponse<AccountHolder> UpdateAccountHolder(AccountHolder accountholder);
+        public APIResponse<AccountHolder> DeleteAccountHolderAccount(int userid);
+        public APIResponse<Transaction> RevertTransaction(User user, int transid);
         public AccountHolder GetAccountHolder(int accountid);
-        public APIResponse ViewAllAccountHolders(int bankid);
+        public APIResponse<AccountHolder> ViewAllAccountHolders(int bankid);
         public bool IsExitAccountHolder(int accountid);
-        public APIResponse ViewBalance(int accountid);
-        public APIResponse ViewTransactions(int accountholderid);
+        public APIResponse<AccountHolder> ViewBalance(int accountid);
+        public APIResponse<Transaction> ViewTransactions(int accountholderid);
     }
 }
