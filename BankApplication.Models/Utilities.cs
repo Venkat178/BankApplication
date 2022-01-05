@@ -33,8 +33,9 @@ namespace BankApplication.Models
                 if(isRequired)
                 {
                     input = Convert.ToInt64(Console.ReadLine());
-                    if (1000000000 < input && input > 9999999999)
+                    if (1000000000 > input || input > 9999999999)
                     {
+                        Console.WriteLine("Please provide valid phone number");
                         input = GetPhoneNumber(helpText, isRequired);
                     }
                 }
@@ -91,7 +92,6 @@ namespace BankApplication.Models
             {
                 transaction.SrcAccId = srcid;
                 transaction.DestAccId = destid;
-                
             }
             transaction.Amount = amt;
             transaction.CreatedBy = userid;

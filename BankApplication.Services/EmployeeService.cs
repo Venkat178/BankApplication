@@ -26,7 +26,7 @@ namespace BankApplication.Services
                         return new APIResponse<Employee>() { IsSuccess = false, Message = "Account already exists!" };
                     }
                     employee.Type = UserType.Employee;
-                    employee.EmployeeId = employee.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
+                    employee.EmployeeId = Utilities.GetEmployeeId(employee.Name);//employee.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
                     BankAppDbctx.Employees.Add(employee);
                     BankAppDbctx.SaveChanges();
 

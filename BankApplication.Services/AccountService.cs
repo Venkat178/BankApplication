@@ -82,7 +82,7 @@ namespace BankApplication.Services
                     accountholder.Password = accountholder1.Password;
                     BankAppDbctx.SaveChanges();
 
-                    return new APIResponse<string> { IsSuccess = true, Message = accountholder.Password };
+                    return new APIResponse<string> { IsSuccess = true, Message = "Password reset successfully" };
                 }
                 else
                 {

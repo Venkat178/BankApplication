@@ -29,7 +29,7 @@ namespace BankApplication.Services
                 BankAppDbctx.SaveChanges();
 
                 admin.BranchId = branch.BankId = admin.Bank.Id;
-                admin.EmployeeId = admin.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
+                admin.EmployeeId = Utilities.GetEmployeeId(admin.Name);//admin.Name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
 
                 BankAppDbctx.Branches.Add(branch);
                 BankAppDbctx.SaveChanges();
@@ -54,15 +54,16 @@ namespace BankApplication.Services
                 Bank bank = BankAppDbctx.Banks.FirstOrDefault(_ => _.Id == currencycode.BankId);
                 if (bank != null)
                 {
-                    BankAppDbctx.CurrencyCodes.Add(new CurrencyCode() { Code = currencycode.Code, ExchangeRate = currencycode.ExchangeRate, IsDefault = false });
+                    BankAppDbctx.CurrencyCodes.Add(new CurrencyCode() { Bank = bank ,Code = currencycode.Code, ExchangeRate = currencycode.ExchangeRate, IsDefault = false });
                     BankAppDbctx.SaveChanges();
 
                     return new APIResponse<CurrencyCode>() { IsSuccess = true, Message = "Successfully added" };
                 }
                 return new APIResponse<CurrencyCode>() { IsSuccess = false, Message = "Bank not found" };
             }
-            catch(Exception)
+            catch(Exception ex)
             {
+                Console.WriteLine(ex.InnerException.Message);
                 return new APIResponse<CurrencyCode>() { IsSuccess = false, Message = "Error occured whille adding" };
             }
         }
@@ -142,7 +143,7 @@ namespace BankApplication.Services
                 if (accountholderservice.IsExitAccountHolder(accountid))
                 {
                     AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(a => a.Id == accountid);
-                    Transaction transaction = Utilities.GetTransaction(user.Id,default(int),accountid,amt,accountholder.BankId,TransactionType.Debit);
+                    Transaction transaction = Utilities.GetTransaction(user.Id,default(int),accountid,amt,accountholder.BankId,TransactionType.Credit);
                     accountholder.Balance += amt;
                     BankAppDbctx.AccountHolders.Update(accountholder);
                     BankAppDbctx.Transactions.Add(transaction);
@@ -170,7 +171,7 @@ namespace BankApplication.Services
                     AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(a => a.Id == accountid);
                     if (accountholder.Balance >= amt)
                     {
-                        Transaction transaction = Utilities.GetTransaction(user.Id, accountid, default(int), amt, accountholder.BankId, TransactionType.Credit);
+                        Transaction transaction = Utilities.GetTransaction(user.Id, accountid, default(int), amt, accountholder.BankId, TransactionType.Debit);
                         accountholder.Balance -= amt;
                         BankAppDbctx.AccountHolders.Update(accountholder);
                         BankAppDbctx.Transactions.Add(transaction);
@@ -202,7 +203,10 @@ namespace BankApplication.Services
                         {
                             if (srcaccountholder.Balance >= transaction1.Amount)
                             {
+                                
                                 srcaccountholder.Balance = srcaccountholder.Balance - transaction1.Amount;
+                                destaccountholder.Balance += transaction1.Amount;
+                                BankAppDbctx.AccountHolders.Update(destaccountholder);
                                 BankAppDbctx.AccountHolders.Update(srcaccountholder);
                                 BankAppDbctx.Transactions.Add(transaction);
                                 BankAppDbctx.SaveChanges();
@@ -218,7 +222,10 @@ namespace BankApplication.Services
                         {
                             if (srcaccountholder.Balance >= transaction1.Amount + (0.05 * transaction1.Amount))
                             {
+                                
                                 srcaccountholder.Balance = srcaccountholder.Balance - (transaction1.Amount + (0.05 * transaction1.Amount));
+                                destaccountholder.Balance += transaction1.Amount;
+                                BankAppDbctx.AccountHolders.Update(destaccountholder);
                                 BankAppDbctx.AccountHolders.Update(srcaccountholder);
                                 BankAppDbctx.Transactions.Add(transaction);
                                 BankAppDbctx.SaveChanges();
@@ -237,7 +244,10 @@ namespace BankApplication.Services
                         {
                             if (srcaccountholder.Balance >= transaction1.Amount + (0.02 * transaction1.Amount))
                             {
+                                
                                 srcaccountholder.Balance = srcaccountholder.Balance - (transaction1.Amount + (0.02 * transaction1.Amount));
+                                destaccountholder.Balance += transaction1.Amount;
+                                BankAppDbctx.AccountHolders.Update(destaccountholder);
                                 BankAppDbctx.AccountHolders.Update(srcaccountholder);
                                 BankAppDbctx.Transactions.Add(transaction);
                                 BankAppDbctx.SaveChanges();
@@ -253,7 +263,10 @@ namespace BankApplication.Services
                         {
                             if (srcaccountholder.Balance >= transaction1.Amount + (0.06 * transaction1.Amount))
                             {
+                                
                                 srcaccountholder.Balance = srcaccountholder.Balance -= (transaction1.Amount + (0.06 * transaction1.Amount));
+                                destaccountholder.Balance += transaction1.Amount;
+                                BankAppDbctx.AccountHolders.Update(destaccountholder);
                                 BankAppDbctx.AccountHolders.Update(srcaccountholder);
                                 BankAppDbctx.Transactions.Add(transaction);
                                 BankAppDbctx.SaveChanges();
@@ -266,12 +279,6 @@ namespace BankApplication.Services
                             }
                         }
                     }
-                    destaccountholder.Balance += transaction1.Amount;
-                    BankAppDbctx.AccountHolders.Update(destaccountholder);
-                    BankAppDbctx.Transactions.Add(transaction);
-                    BankAppDbctx.SaveChanges();
-
-                    return new APIResponse<Transaction> { IsSuccess = true, Message = "Transfered Successfull" };
                 }
                 else
                 {

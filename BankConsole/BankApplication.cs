@@ -58,7 +58,7 @@ namespace BankApplication
                 List<AccountHolder> accountholderlist = apiresponse.list;
                 foreach (var i in accountholderlist)
                 {
-                    Console.WriteLine(i.Id + " - " + i.Name);
+                    Console.WriteLine(i.Id + " - " + i.Name + " - " + i.Address + " - " + i.PhoneNumber);
                 }
                 return bankid;
             }
@@ -79,7 +79,7 @@ namespace BankApplication
                 List<Employee> employeelist = apiresponse.list;
                 foreach (var i in employeelist)
                 {
-                    Console.WriteLine(i.Id + " - " + i.EmployeeId + " - " + i.Name);
+                    Console.WriteLine(i.Id + " - " + i.EmployeeId + " - " + i.Name + " - " + i.Address + " - " + i.PhoneNumber);
                 }
             }
             else
@@ -98,7 +98,7 @@ namespace BankApplication
                 List<Transaction> transactionlist = apiresponse.list;
                 foreach (var i in transactionlist)
                 {
-                    Console.WriteLine(i.SrcAccId + " to " + i.DestAccId + " of " + i.Amount);
+                    Console.WriteLine(i.SrcAccId + " to " + i.DestAccId + " of " + i.Amount + "Created by "+ i.CreatedBy);
                 }
             }
             else
@@ -172,7 +172,7 @@ namespace BankApplication
             }
             else
             {
-                Console.WriteLine("Unable to save the details");
+                Console.WriteLine(status.Message);
                 this.SetUpBank();
             }
         }
@@ -237,10 +237,14 @@ namespace BankApplication
                 }
                 employee.Password = password;
                 APIResponse<Employee> apiresponse = employeeservice.CreateEmployee(employee);
-                if(apiresponse.Message == null)
+                if(!apiresponse.IsSuccess)
                 {
-                    Console.WriteLine("Name should not be short");
+                    Console.WriteLine(apiresponse.Message);
                     this.EmployeeRegistration();
+                }
+                else
+                {
+                    employee.EmployeeId = apiresponse.Message;
                 }
             }
             catch (Exception)
@@ -252,13 +256,13 @@ namespace BankApplication
         }
 
 
-        public string AccountHolderRegistration()
+        public int AccountHolderRegistration()
         {
-            string accountholderid = null;
+            AccountHolder accountholder = new AccountHolder();
             try
             {
                 AccountHolderService accountholderservice = new AccountHolderService();
-                AccountHolder accountholder = new AccountHolder();
+                
                 accountholder.Name = Utilities.GetStringInput("Enter the Your Name   :   ", true);
                 int bankid = this.BankServiceViewAllBranches();
                 accountholder.BankId = bankid;
@@ -275,8 +279,12 @@ namespace BankApplication
                 APIResponse<AccountHolder> status = accountholderservice.CreateAccountHolder(accountholder);
                 if(!status.IsSuccess)
                 {
-                    Console.WriteLine("Unable to register");
+                    Console.WriteLine(status.Message);
                     this.AccountHolderRegistration();
+                }
+                else
+                {
+                    accountholder.Id = Convert.ToInt32(status.Message);
                 }
             }
             catch (Exception)
@@ -284,7 +292,7 @@ namespace BankApplication
                 Console.WriteLine("Unable to Register...! Try again");
                 this.AccountHolderRegistration();
             }
-            return accountholderid;
+            return accountholder.Id;
         }
 
         public void Deposit(User user)
@@ -307,8 +315,8 @@ namespace BankApplication
             }
             else
             {
-                double amt = Convert.ToDouble(Utilities.GetStringInput("Enter the amount  :  ", true));
                 int accountid = Convert.ToInt32(Utilities.GetStringInput("Enter the account id  :  ", true));
+                double amt = Convert.ToDouble(Utilities.GetStringInput("Enter the amount  :  ", true));
                 apiresponse = BankService.Deposit(user,accountid, amt);
                 if (apiresponse.IsSuccess)
                 {
@@ -371,11 +379,11 @@ namespace BankApplication
                 APIResponse<Transaction> apiresponse = BankService.Transfer(user, transaction, charge);
                 if (apiresponse.IsSuccess)
                 {
-                    Console.WriteLine("Transaction Id is  :  " + apiresponse.Message);
+                    Console.WriteLine(apiresponse.Message);
                 }
                 else
                 {
-                    Console.WriteLine("The destination id is not found");
+                    Console.WriteLine(apiresponse.Message);
                     this.Transfer(user);
                 }
             }
@@ -392,11 +400,11 @@ namespace BankApplication
                 APIResponse<Transaction> apiresponse = BankService.Transfer(user, transaction, charge);
                 if (apiresponse.IsSuccess)
                 {
-                    Console.WriteLine("Transaction Id is  :  " + apiresponse.Message);
+                    Console.WriteLine(apiresponse.Message);
                 }
                 else
                 {
-                    Console.WriteLine("The destination id is not found");
+                    Console.WriteLine(apiresponse.Message);
                     this.Transfer(user);
                 }
             }
@@ -516,13 +524,13 @@ namespace BankApplication
 
         public void AddCurrency()
         {
-            //IBankService bankservice = new BankService();
             CurrencyCode currencycode = new CurrencyCode()
             {
+                BankId = Convert.ToInt32(Utilities.GetStringInput("Enter the Bank id  :  ", true)),
                 Code = Utilities.GetStringInput("Enter the Currency Code  :  ", true),
                 ExchangeRate = Convert.ToDouble(Utilities.GetStringInput("Enter the Exchange rate  :  ", true)),
-                BankId = Convert.ToInt32(Utilities.GetStringInput("Enter the Bank id  :  ", true))
-        };
+                
+            };
             APIResponse<CurrencyCode> status = BankService.AddCurrency(currencycode);
             if (!status.IsSuccess)
             {
@@ -568,13 +576,14 @@ namespace BankApplication
             AccountHolder accountholder = new AccountHolder()
             {
                 Id = Convert.ToInt32(Utilities.GetStringInput("Enter the account id  :  ", true)),
-                Password = Utilities.GetStringInput("Enter the new password  :  ", true)
+                //Password = Utilities.GetStringInput("Enter the new password  :  ", true)
             };
             string password = Utilities.GetStringInput("Enter the new password  :  ", true);
             while (accountholder.Password != Utilities.GetStringInput("Re-Enter the password  :  ", true))
             {
                 Console.WriteLine("Password does not matched! Please try Again");
             }
+            accountholder.Password = password;
             APIResponse<string> apiresponse = accountservice.ResetPassword(accountholder);
             if(apiresponse.IsSuccess)
             {
@@ -601,7 +610,7 @@ namespace BankApplication
                     switch (option2)
                     {
                         case EmployeeMenu.CreateAccountHolder:
-                            string accountholderid = this.AccountHolderRegistration();
+                            int accountholderid = this.AccountHolderRegistration();
                             Console.WriteLine("The Account Holder Is  :  " + accountholderid);
                             break;
                         case EmployeeMenu.UpdateAccountHolder:
@@ -715,7 +724,7 @@ namespace BankApplication
                             this.DeleteEmployee();
                             break;
                         case AdminMenu.CreateAccountHolder:
-                            string accountholderid = this.AccountHolderRegistration();
+                            int accountholderid = this.AccountHolderRegistration();
                             Console.WriteLine("The Account Holder Id is  :  " + accountholderid);
                             break;
                         case AdminMenu.UpdateAccountHolder:

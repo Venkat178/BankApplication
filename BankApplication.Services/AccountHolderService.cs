@@ -27,15 +27,18 @@ namespace BankApplication.Services
                     {
                         return new APIResponse<AccountHolder>() { IsSuccess = false, Message = "Account already exists!" };
                     }
+
                     accountholder.Type = UserType.AccountHolder;
                     BankAppDbctx.AccountHolders.Add(accountholder);
                     BankAppDbctx.SaveChanges();
 
-                    return new APIResponse<AccountHolder>() { IsSuccess = true, Message = "Account Created successfully...!" };
+                    return new APIResponse<AccountHolder>() { IsSuccess = true, Message = accountholder.Id.ToString() };
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.InnerException.Message);
                 return new APIResponse<AccountHolder>() { IsSuccess = false, Message = "Error occured while creating account" };
             }
             return new APIResponse<AccountHolder>() { IsSuccess = false, Message = "Branch not found" };           
@@ -91,14 +94,23 @@ namespace BankApplication.Services
                 Transaction transaction = BankAppDbctx.Transactions.FirstOrDefault(t => t.Id == transid);
                 if (transaction != null)
                 {
-                    AccountHolder senderaccountholder = BankAppDbctx.AccountHolders.FirstOrDefault(AccountHolder => AccountHolder.Id == transaction.SrcAccId);
-                    AccountHolder receiveraccountholder = BankAppDbctx.AccountHolders.FirstOrDefault(AccountHolder => AccountHolder.Id == transaction.DestAccId);
-                    senderaccountholder.Balance += transaction.Amount;
-                    receiveraccountholder.Balance -= transaction.Amount;
-                    BankAppDbctx.Transactions.Add(transaction);
-                    BankAppDbctx.SaveChanges();
+                    if(transaction.Type == TransactionType.Transfer)
+                    {
+                        AccountHolder destaccountholder = BankAppDbctx.AccountHolders.FirstOrDefault(AccountHolder => AccountHolder.Id == transaction.DestAccId);
+                        AccountHolder senderaccountholder = BankAppDbctx.AccountHolders.FirstOrDefault(AccountHolder => AccountHolder.Id == transaction.SrcAccId);
+                        senderaccountholder.Balance += transaction.Amount;
+                        destaccountholder.Balance -= transaction.Amount;
+                        BankAppDbctx.AccountHolders.Update(senderaccountholder);
+                        BankAppDbctx.AccountHolders.Update(destaccountholder);
+                        //BankAppDbctx.Transactions.Add(transaction);
+                        BankAppDbctx.SaveChanges();
 
-                    return new APIResponse<Transaction>() { IsSuccess = true, Message = "Succefully transfered" };
+                        return new APIResponse<Transaction>() { IsSuccess = true, Message = "Succefully transfered" };
+                    }
+                    else
+                    {
+                        return new APIResponse<Transaction>() { IsSuccess = false, Message = "Deposit , credit not to be reverted" };
+                    }
                 }
             }
             catch (Exception)
