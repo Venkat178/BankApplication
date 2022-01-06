@@ -21,7 +21,7 @@ namespace BankApplication.Services
                 Branch branch = BankAppDbctx.Branches.FirstOrDefault(b => b.Id == employee.BranchId);
                 if (branch != null)
                 {
-                    if (BankAppDbctx.Employees.Any(p => p.Name == employee.Name) == true)
+                    if (BankAppDbctx.Employees.Any(p => p.Name == employee.Name))
                     {
                         return new APIResponse<Employee>() { IsSuccess = false, Message = "Account already exists!" };
                     }
@@ -37,6 +37,7 @@ namespace BankApplication.Services
             {
                 return new APIResponse<Employee>() { IsSuccess = false, Message = "Error while creating employee!" };
             }
+
             return new APIResponse<Employee>() { IsSuccess = false, Message = "Branch not found" };
         }
 
@@ -47,9 +48,9 @@ namespace BankApplication.Services
                 var oldemployee = BankAppDbctx.Employees.FirstOrDefault(_ => _.Id == employee.Id);
                 if (oldemployee != null)
                 {
-                    oldemployee.Name = employee.Name == string.Empty ? oldemployee.Name : employee.Name;
+                    oldemployee.Name = string.IsNullOrEmpty(employee.Name) ? oldemployee.Name : employee.Name;
                     oldemployee.PhoneNumber = employee.PhoneNumber == default(long) ? oldemployee.PhoneNumber : employee.PhoneNumber;
-                    oldemployee.Address = employee.Address == string.Empty ? oldemployee.Address : employee.Address;
+                    oldemployee.Address = string.IsNullOrEmpty(employee.Address) ? oldemployee.Address : employee.Address;
                     BankAppDbctx.SaveChanges();
 
                     return new APIResponse<Employee>() { IsSuccess = true, Message = "Successfully updated" };
@@ -57,8 +58,9 @@ namespace BankApplication.Services
             }
             catch (Exception) 
             {
-                return new APIResponse<Employee>() { IsSuccess = false, Message = "Error occured while updating employee.Try again" };
+                return new APIResponse<Employee>() { IsSuccess = false, Message = "Error occured while updating employee. Try again" };
             }
+
             return new APIResponse<Employee>() { IsSuccess = false, Message = "Employee not found" };
         }
 
@@ -79,6 +81,7 @@ namespace BankApplication.Services
             {
                 return new APIResponse<Employee>() { IsSuccess = false, Message = "Error occured while deleting" };
             }
+
             return new APIResponse<Employee>() { IsSuccess = false, Message = "Employee not found" };
         }
 
@@ -87,7 +90,6 @@ namespace BankApplication.Services
             try
             {
                 Employee employee = BankAppDbctx.Employees.FirstOrDefault(employee => employee.Id == employeeid && employee.Type == UserType.Employee);
-
                 return employee;
             }
             catch(Exception)
@@ -96,7 +98,7 @@ namespace BankApplication.Services
             }
         }
 
-        public APIResponse<Employee> ViewAllEmployees(int bankid)
+        public APIResponse<Employee> GetEmployeesByBank(int bankid)
         {
             try
             {
@@ -105,6 +107,7 @@ namespace BankApplication.Services
                 {
                     return new APIResponse<Employee> { list = BankAppDbctx.Employees.Where(b => b.BankId == bankid).ToList(), IsSuccess = true };
                 }
+
                 return new APIResponse<Employee> { Message = "Bank not found", IsSuccess = false };
             }
             catch(Exception)

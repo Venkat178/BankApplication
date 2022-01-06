@@ -130,7 +130,7 @@ namespace BankApplication
 
         public void SetUpBank()
         {
-            Bank bank = new Bank()
+            Bank bank = new Bank()  // Move default bank to constants
             {
                 CurrencyCodes = new List<CurrencyCode>() { new CurrencyCode() {  Code = "INR", ExchangeRate = 1, IsDefault = true } },
                 IMPSChargesforSameBank = 5,
@@ -139,12 +139,17 @@ namespace BankApplication
                 RTGSChargesforDifferentBank = 2,
                 Name = Utilities.GetStringInput("Enter the Bank name  :  ", true)
             };
+            APIResponse<Bank> bankRes = this.BankService.CreateBank(bank);
+
             Branch branch = new Branch()
             {
                 Name = Utilities.GetStringInput("Enter the branch name  :  ", true),
                 Address = Utilities.GetStringInput("Enter the branch address  :  ", true),
-                IFSCCode = Utilities.GetStringInput("Enter the branch IFSC Code  :  ", true)
+                IFSCCode = Utilities.GetStringInput("Enter the branch IFSC Code  :  ", true),
+                BankId = bankRes.Data.Id,
+                IsMainBranch = true
             };
+            APIResponse<Branch> branchRes = this.BankService.CreateBranch(branch);
 
             Console.WriteLine("Please provide admin details to set up admin");
             Employee admin = new Employee()
@@ -154,17 +159,17 @@ namespace BankApplication
                 PhoneNumber = Utilities.GetPhoneNumber("Enter the Phone number  :  ", true),
                 Address = Utilities.GetStringInput("Enter the Your Address  :  ", true),
                 Gender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.GetStringInput("Enter the Your Gender  :  ", true), true),
-                Bank = bank,
-                Password = Utilities.GetStringInput("Enter the new password  :  ", true)
+                Password = Utilities.GetStringInput("Enter the new password  :  ", true),
+                BankId = bankRes.Data.Id,
+                BranchId = branchRes.Data.Id
             };
 
             while (admin.Password != Utilities.GetStringInput("Re-Enter the password  :  ", true))
             {
                 Console.WriteLine("Password does not matched! Please try Again");
             }
+            var adminRes = this.employeeService.CreateEmployee(admin);
 
-            
-            APIResponse<Bank> status = this.BankService.CreateBank(branch,admin);
             if (status.IsSuccess)
             {
                 Console.WriteLine("The Admin Id is " + admin.EmployeeId);
@@ -184,29 +189,26 @@ namespace BankApplication
             string password = Utilities.GetStringInput("Enter password :  ", true);
             try
             {
-                Employee employee = accountservice.AdminLogin(username, password);
+                Employee employee = accountservice.Login<User>(username, password);
                 if(employee != null)
                 {
-                    this.AdminConsole(employee);
-                    return;
-                }
+                    switch (employee.Type)
+                    {
+                        case UserType.Employee:
+                            this.EmployeeConsole(employee);
+                            break;
 
-                Employee employee1 = accountservice.EmployeeLogin(username, password);
-                if (employee1 != null)
-                {
-                    this.EmployeeConsole(employee1);
-                    return;
-                }
+                        case UserType.Admin:
+                            this.AdminConsole(employee);
+                            break;
 
-                AccountHolder accountholder = accountservice.AccountHolderLogin(username, password);
-                if (accountholder != null)
-                {
-                    this.AccountHolderConsole(accountholder);
-                    return;
+                        case UserType.AccountHolder:
+                            this.AccountHolderConsole(employee);
+                            break;
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("User not found");
                     this.Login();
                 }
             }
@@ -366,47 +368,16 @@ namespace BankApplication
 
         public void Transfer(User user)
         {
-            //IBankService bankservice = new BankService();
-            if(user.Type == UserType.AccountHolder)
+            int srcAccId = user.Type == UserType.AccountHolder ? user.Id : Convert.ToInt32(Utilities.GetStringInput("Enter the Source Id  :  ", true));
+            int destAccId = Convert.ToInt32(Utilities.GetStringInput("Enter the DestinationAccount Id  :  ", true));
+            double amount = Convert.ToDouble(Utilities.GetStringInput("Enter the Amount  :  ", true));
+            Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.GetStringInput("What type of transfer you want IMPS/RTGS", true), true);
+            
+            APIResponse<Transaction> apiresponse = BankService.Transfer(user.Id, srcAccId, destAccId, amount, charge);
+            Console.WriteLine(apiresponse.Message);
+            if (!apiresponse.IsSuccess)
             {
-                Transaction transaction = new Transaction()
-                {
-                    SrcAccId = user.Id,
-                    DestAccId = Convert.ToInt32(Utilities.GetStringInput("Enter the DestinationAccount Id  :  ", true)),
-                    Amount = Convert.ToDouble(Utilities.GetStringInput("Enter the Amount  :  ", true)),
-                };
-                Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.GetStringInput("What type of transfer you want IMPS/RTGS", true), true);
-                APIResponse<Transaction> apiresponse = BankService.Transfer(user, transaction, charge);
-                if (apiresponse.IsSuccess)
-                {
-                    Console.WriteLine(apiresponse.Message);
-                }
-                else
-                {
-                    Console.WriteLine(apiresponse.Message);
-                    this.Transfer(user);
-                }
-            }
-            else
-            {
-                Transaction transaction = new Transaction()
-                {
-                    SrcAccId = Convert.ToInt32(Utilities.GetStringInput("Enter the Source Id  :  ", true)),
-                    DestAccId = Convert.ToInt32(Utilities.GetStringInput("Enter the DestinationAccount Id  :  ", true)),
-                    Amount = Convert.ToDouble(Utilities.GetStringInput("Enter the Amount  :  ", true)),
-                };
-                Charges charge = (Charges)Enum.Parse(typeof(Charges), Utilities.GetStringInput("What type of transfer you want IMPS/RTGS", true), true);
-
-                APIResponse<Transaction> apiresponse = BankService.Transfer(user, transaction, charge);
-                if (apiresponse.IsSuccess)
-                {
-                    Console.WriteLine(apiresponse.Message);
-                }
-                else
-                {
-                    Console.WriteLine(apiresponse.Message);
-                    this.Transfer(user);
-                }
+                this.Transfer(user);
             }
         }
 
@@ -414,7 +385,7 @@ namespace BankApplication
         {
             AccountHolderService accountholderservice = new AccountHolderService();
             int accountid = Convert.ToInt32(Utilities.GetStringInput("Enter the Account Id  :  ", true));
-            APIResponse<AccountHolder> apiresponse = accountholderservice.ViewBalance(accountid);
+            APIResponse<AccountHolder> apiresponse = accountholderservice.GetBalance(accountid);
             if(apiresponse.IsSuccess)
             {
                 Console.WriteLine("Your Balance is " + apiresponse.Message);
@@ -529,7 +500,6 @@ namespace BankApplication
                 BankId = Convert.ToInt32(Utilities.GetStringInput("Enter the Bank id  :  ", true)),
                 Code = Utilities.GetStringInput("Enter the Currency Code  :  ", true),
                 ExchangeRate = Convert.ToDouble(Utilities.GetStringInput("Enter the Exchange rate  :  ", true)),
-                
             };
             APIResponse<CurrencyCode> status = BankService.AddCurrency(currencycode);
             if (!status.IsSuccess)
@@ -584,7 +554,7 @@ namespace BankApplication
                 Console.WriteLine("Password does not matched! Please try Again");
             }
             accountholder.Password = password;
-            APIResponse<string> apiresponse = accountservice.ResetPassword(accountholder);
+            APIResponse<string> apiresponse = accountservice.ResetPassword(id, password);
             if(apiresponse.IsSuccess)
             {
                 Console.WriteLine(apiresponse.Message);

@@ -70,36 +70,23 @@ namespace BankApplication.Models
             return Id;
         }
 
-        public static string GetEmployeeId(string name)
+        public static string GetEmployeeId(string name) // chnage name of the method
         {
             return name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
         }
 
-        public static Transaction GetTransaction(int userid , int srcid,int destid,double amt , int bankid,TransactionType type)
+        public static Transaction GetTransaction(int userid, int srcid, int destid, double amt, int bankid, TransactionType type)
         {
-            Transaction transaction = new Transaction();
-            if (type == TransactionType.Credit)
+            return new Transaction()
             {
-                transaction.SrcAccId = default(int);
-                transaction.DestAccId = destid;
-            }
-            else if(type == TransactionType.Debit)
-            {
-                transaction.SrcAccId = srcid;
-                transaction.DestAccId = default(int);
-            }
-            else
-            {
-                transaction.SrcAccId = srcid;
-                transaction.DestAccId = destid;
-            }
-            transaction.Amount = amt;
-            transaction.CreatedBy = userid;
-            transaction.CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss");
-            transaction.Type = type;
-            transaction.TransactionId = GetTransactionId(srcid,destid,bankid);
-
-            return transaction;
+                SrcAccId = srcid,
+                DestAccId = destid,
+                Amount = amt,
+                CreatedBy = userid,
+                CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss"),
+                Type = type,
+                TransactionId = GetTransactionId(srcid, destid, bankid)
+            };
         }
 
     }

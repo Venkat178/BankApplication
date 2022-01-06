@@ -10,7 +10,7 @@ namespace BankApplication.Concerns
         public APIResponse<Transaction> RevertTransaction(User user, int transid);
         public AccountHolder GetAccountHolder(int accountid);
         public APIResponse<AccountHolder> ViewAllAccountHolders(int bankid);
-        public bool IsExitAccountHolder(int accountid);
+        public bool IsExistAccountHolder(int accountid);
         public APIResponse<AccountHolder> ViewBalance(int accountid);
         public APIResponse<Transaction> ViewTransactions(int accountholderid);
     }

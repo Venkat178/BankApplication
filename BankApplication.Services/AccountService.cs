@@ -14,12 +14,18 @@ namespace BankApplication.Services
             BankAppDbctx = new BankApplicationDbContext();
         }
 
+        public T Login<T>(int username, string password)
+        {
+
+
+            return T();
+        }
+
         public Employee AdminLogin(int employeeid, string password)
         {
             Employee employee = null;
             try
             {
-                
                 if (BankAppDbctx.Employees.Any(emp => emp.Id == employeeid && emp.Password == password && emp.Type == UserType.Admin))
                 {
                     employee = BankAppDbctx.Employees.FirstOrDefault(emp => emp.Id == employeeid && emp.Password == password && emp.Type == UserType.Admin);
@@ -72,11 +78,11 @@ namespace BankApplication.Services
             }
         }
 
-        public APIResponse<string> ResetPassword(AccountHolder accountholder1)
+        public APIResponse<string> ResetPassword(id, pswd)
         {
             try
             {
-                AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(account => account.Id == accountholder1.Id);
+                AccountHolder oldAccountholder = BankAppDbctx.AccountHolders.FirstOrDefault(account => account.Id == accountholder1.Id);
                 if (accountholder != null)
                 {
                     accountholder.Password = accountholder1.Password;

@@ -6,11 +6,12 @@ namespace BankApplication.Models
     {
         public APIResponse()
         {
-            list = new List<T>();
+            this.ListData = new List<T>();
         }
         public bool IsSuccess { get; set; }
         public string Message { get; set; }
-        public List<T> list { get; set; }
+        public List<T> ListData { get; set; }
+        public T Data { get; set; }
     }
 
 }

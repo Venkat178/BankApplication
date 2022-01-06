@@ -5,7 +5,8 @@ namespace BankApplication.Concerns
 {
     public interface IBankService
     {
-        public APIResponse<Bank> CreateBank(Branch branch,Employee admin);
+        public APIResponse<Bank> CreateBank(Bank bank);
+        public APIResponse<Branch> CreateBranch(Branch branch);
         public APIResponse<Branch> AddBranch(Branch branch);
         public APIResponse<Branch> DeleteBranch(int branchid);
         public APIResponse<CurrencyCode> AddCurrency(CurrencyCode currencyCode);
