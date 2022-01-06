@@ -8,7 +8,7 @@ namespace BankApplication.Concerns
         public APIResponse<Employee> UpdateEmployee(Employee employee);
         public APIResponse<Employee> DeleteEmployee(int employeeid);
         public Employee GetEmployee(int employeeid);
-        public APIResponse<Employee> ViewAllEmployees(int bankid);
+        public APIResponse<Employee> GetEmployeesByBank(int bankid);
         public bool IsExitEmployee(int employeeid);
     }
 }

@@ -7,11 +7,10 @@ namespace BankApplication.Concerns
         public APIResponse<AccountHolder> CreateAccountHolder(AccountHolder accountholder);
         public APIResponse<AccountHolder> UpdateAccountHolder(AccountHolder accountholder);
         public APIResponse<AccountHolder> DeleteAccountHolderAccount(int userid);
-        public APIResponse<Transaction> RevertTransaction(User user, int transid);
         public AccountHolder GetAccountHolder(int accountid);
-        public APIResponse<AccountHolder> ViewAllAccountHolders(int bankid);
+        public APIResponse<AccountHolder> GetAccountHoldersByBank(int bankid);
         public bool IsExistAccountHolder(int accountid);
-        public APIResponse<AccountHolder> ViewBalance(int accountid);
-        public APIResponse<Transaction> ViewTransactions(int accountholderid);
+        public APIResponse<AccountHolder> GetBalance(int accountid);
+        public APIResponse<Transaction> GetTransactions(int accountholderid);
     }
 }

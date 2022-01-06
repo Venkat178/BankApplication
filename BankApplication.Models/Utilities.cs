@@ -64,18 +64,18 @@ namespace BankApplication.Models
             return input;
         }
 
-        public static string GetTransactionId(int srcid, int desid , int bankid)
+        public static string GenarateTransactionId(int srcid, int desid , int bankid)
         {
             string Id = "TXN" + srcid + desid + bankid + DateTime.Now.ToString("yyyyMMddHHmmss");
             return Id;
         }
 
-        public static string GetEmployeeId(string name) // chnage name of the method
+        public static string GenarateEmployeeId(string name) // chnage name of the method
         {
             return name.Substring(0, 3) + DateTime.Now.ToString("yyyyMMddHHmmss");
         }
 
-        public static Transaction GetTransaction(int userid, int srcid, int destid, double amt, int bankid, TransactionType type)
+        public static Transaction GenarateTransaction(int userid, int srcid, int destid, double amt, int bankid, TransactionType type)
         {
             return new Transaction()
             {
@@ -85,7 +85,7 @@ namespace BankApplication.Models
                 CreatedBy = userid,
                 CreatedOn = DateTime.Now.ToString("yyyyMMddHHmmss"),
                 Type = type,
-                TransactionId = GetTransactionId(srcid, destid, bankid)
+                TransactionId = GenarateTransactionId(srcid, destid, bankid)
             };
         }
 

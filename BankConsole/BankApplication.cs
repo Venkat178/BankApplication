@@ -52,10 +52,10 @@ namespace BankApplication
         {
             AccountHolderService accountholderservice = new AccountHolderService();
             int bankid = Convert.ToInt32(Utilities.GetStringInput("Enter the bank id  :  ", true));
-            APIResponse<AccountHolder> apiresponse = accountholderservice.ViewAllAccountHolders(bankid);
+            APIResponse<AccountHolder> apiresponse = accountholderservice.GetAccountHoldersByBank(bankid);
             if (apiresponse.IsSuccess)
             {
-                List<AccountHolder> accountholderlist = apiresponse.list;
+                List<AccountHolder> accountholderlist = apiresponse.ListData;
                 foreach (var i in accountholderlist)
                 {
                     Console.WriteLine(i.Id + " - " + i.Name + " - " + i.Address + " - " + i.PhoneNumber);
@@ -73,10 +73,10 @@ namespace BankApplication
         {
             EmployeeService employeeservice = new EmployeeService();
             int bankid = Convert.ToInt32(Utilities.GetStringInput("Enter the bank id  :  ", true));
-            APIResponse<Employee> apiresponse = employeeservice.ViewAllEmployees(bankid);
+            APIResponse<Employee> apiresponse = employeeservice.GetEmployeesByBank(bankid);
             if (apiresponse.IsSuccess)
             {
-                List<Employee> employeelist = apiresponse.list;
+                List<Employee> employeelist = apiresponse.ListData;
                 foreach (var i in employeelist)
                 {
                     Console.WriteLine(i.Id + " - " + i.EmployeeId + " - " + i.Name + " - " + i.Address + " - " + i.PhoneNumber);
@@ -92,10 +92,10 @@ namespace BankApplication
         {
             AccountHolderService accountholderservice =new AccountHolderService();
             int accountid = Convert.ToInt32(Utilities.GetStringInput("Enter the account id  :  ", true));
-            APIResponse<Transaction> apiresponse = accountholderservice.ViewTransactions(accountid);
+            APIResponse<Transaction> apiresponse = accountholderservice.GetTransactions(accountid);
             if (apiresponse.IsSuccess)
             {
-                List<Transaction> transactionlist = apiresponse.list;
+                List<Transaction> transactionlist = apiresponse.ListData;
                 foreach (var i in transactionlist)
                 {
                     Console.WriteLine(i.SrcAccId + " to " + i.DestAccId + " of " + i.Amount + "Created by "+ i.CreatedBy);
@@ -111,10 +111,10 @@ namespace BankApplication
         {
             //IBankService bankservice = new BankService();
             int bankid = Convert.ToInt32(Utilities.GetStringInput("Enter the bank id  :  ", true));
-            APIResponse<Branch> apiresponse = BankService.ViewAllBranches(bankid);
+            APIResponse<Branch> apiresponse = BankService.GetBranchesBybank(bankid);
             if (apiresponse.IsSuccess)
             {
-                List<Branch> branchlist = apiresponse.list;
+                List<Branch> branchlist = apiresponse.ListData;
                 foreach (var i in branchlist)
                 {
                     Console.WriteLine(i.Id + " - " + i.Name);
@@ -130,54 +130,61 @@ namespace BankApplication
 
         public void SetUpBank()
         {
-            Bank bank = new Bank()  // Move default bank to constants
+            IEmployeeService employeeservice = new EmployeeService();
+            Bank bank = new Bank()
             {
-                CurrencyCodes = new List<CurrencyCode>() { new CurrencyCode() {  Code = "INR", ExchangeRate = 1, IsDefault = true } },
-                IMPSChargesforSameBank = 5,
-                RTGSChargesforSameBank = 0,
-                IMPSChargesforDifferentBank = 6,
-                RTGSChargesforDifferentBank = 2,
                 Name = Utilities.GetStringInput("Enter the Bank name  :  ", true)
             };
             APIResponse<Bank> bankRes = this.BankService.CreateBank(bank);
-
-            Branch branch = new Branch()
+            if(bankRes.IsSuccess)
             {
-                Name = Utilities.GetStringInput("Enter the branch name  :  ", true),
-                Address = Utilities.GetStringInput("Enter the branch address  :  ", true),
-                IFSCCode = Utilities.GetStringInput("Enter the branch IFSC Code  :  ", true),
-                BankId = bankRes.Data.Id,
-                IsMainBranch = true
-            };
-            APIResponse<Branch> branchRes = this.BankService.CreateBranch(branch);
+                Branch branch = new Branch()
+                {
+                    Name = Utilities.GetStringInput("Enter the branch name  :  ", true),
+                    Address = Utilities.GetStringInput("Enter the branch address  :  ", true),
+                    IFSCCode = Utilities.GetStringInput("Enter the branch IFSC Code  :  ", true),
+                    BankId = bankRes.Data.Id,
+                    IsMainBranch = true
+                };
+                APIResponse<Branch> branchRes = this.BankService.CreateBranch(branch);
+                if(branchRes.IsSuccess)
+                {
+                    Console.WriteLine("Please provide admin details to set up admin");
+                    Employee admin = new Employee()
+                    {
+                        Type = UserType.Admin,
+                        Name = Utilities.GetStringInput("Enter the Admin Name  :  ", true),
+                        PhoneNumber = Utilities.GetPhoneNumber("Enter the Phone number  :  ", true),
+                        Address = Utilities.GetStringInput("Enter the Your Address  :  ", true),
+                        Gender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.GetStringInput("Enter the Your Gender  :  ", true), true),
+                        Password = Utilities.GetStringInput("Enter the new password  :  ", true),
+                        BankId = bankRes.Data.Id,
+                        BranchId = branchRes.Data.Id
+                    };
 
-            Console.WriteLine("Please provide admin details to set up admin");
-            Employee admin = new Employee()
-            {
-                Type = UserType.Admin,
-                Name = Utilities.GetStringInput("Enter the Admin Name  :  ", true),
-                PhoneNumber = Utilities.GetPhoneNumber("Enter the Phone number  :  ", true),
-                Address = Utilities.GetStringInput("Enter the Your Address  :  ", true),
-                Gender = (GenderType)Enum.Parse(typeof(GenderType), Utilities.GetStringInput("Enter the Your Gender  :  ", true), true),
-                Password = Utilities.GetStringInput("Enter the new password  :  ", true),
-                BankId = bankRes.Data.Id,
-                BranchId = branchRes.Data.Id
-            };
-
-            while (admin.Password != Utilities.GetStringInput("Re-Enter the password  :  ", true))
-            {
-                Console.WriteLine("Password does not matched! Please try Again");
-            }
-            var adminRes = this.employeeService.CreateEmployee(admin);
-
-            if (status.IsSuccess)
-            {
-                Console.WriteLine("The Admin Id is " + admin.EmployeeId);
-                Console.WriteLine("Bank and admin are successfuly created");
+                    while (admin.Password != Utilities.GetStringInput("Re-Enter the password  :  ", true))
+                    {
+                        Console.WriteLine("Password does not matched! Please try Again");
+                    }
+                    var adminRes = employeeservice.CreateEmployee(admin);
+                    if (adminRes.IsSuccess)
+                    {
+                        Console.WriteLine("The Admin Id is " + admin.EmployeeId);
+                        Console.WriteLine("Bank and admin are successfuly created");
+                    }
+                    else
+                    {
+                        Console.WriteLine(adminRes.Message);
+                        while(!adminRes.IsSuccess)
+                        {
+                            adminRes = employeeservice.CreateEmployee(admin);
+                        }
+                    }
+                }
             }
             else
             {
-                Console.WriteLine(status.Message);
+                Console.WriteLine(bankRes.Message);
                 this.SetUpBank();
             }
         }
@@ -189,21 +196,21 @@ namespace BankApplication
             string password = Utilities.GetStringInput("Enter password :  ", true);
             try
             {
-                Employee employee = accountservice.Login<User>(username, password);
-                if(employee != null)
+                User user = accountservice.Login(username, password);
+                if(user != null)
                 {
-                    switch (employee.Type)
+                    switch (user.Type)
                     {
                         case UserType.Employee:
-                            this.EmployeeConsole(employee);
+                            this.EmployeeConsole((Employee)user);
                             break;
 
                         case UserType.Admin:
-                            this.AdminConsole(employee);
+                            this.AdminConsole((Employee)user);
                             break;
 
                         case UserType.AccountHolder:
-                            this.AccountHolderConsole(employee);
+                            this.AccountHolderConsole((AccountHolder)user);
                             break;
                     }
                 }
@@ -530,9 +537,8 @@ namespace BankApplication
 
         public void RevertTransaction(User user)
         {
-            IAccountHolderService accountholderservice = new AccountHolderService();
             int transid = Convert.ToInt32(Utilities.GetStringInput("Enter the TransactionID  :  ", true));
-            APIResponse<Transaction> apiresponse = accountholderservice.RevertTransaction(user, transid);
+            APIResponse<Transaction> apiresponse = BankService.RevertTransaction(user, transid);
             if (!apiresponse.IsSuccess)
             {
                 Console.WriteLine(apiresponse.Message);
@@ -543,17 +549,12 @@ namespace BankApplication
         public void ResetPassword()
         {
             IAccountService accountservice = new AccountService();
-            AccountHolder accountholder = new AccountHolder()
-            {
-                Id = Convert.ToInt32(Utilities.GetStringInput("Enter the account id  :  ", true)),
-                //Password = Utilities.GetStringInput("Enter the new password  :  ", true)
-            };
+            int id = Convert.ToInt32(Utilities.GetStringInput("Enter the account id  :  ", true));
             string password = Utilities.GetStringInput("Enter the new password  :  ", true);
-            while (accountholder.Password != Utilities.GetStringInput("Re-Enter the password  :  ", true))
+            while (password != Utilities.GetStringInput("Re-Enter the password  :  ", true))
             {
                 Console.WriteLine("Password does not matched! Please try Again");
             }
-            accountholder.Password = password;
             APIResponse<string> apiresponse = accountservice.ResetPassword(id, password);
             if(apiresponse.IsSuccess)
             {

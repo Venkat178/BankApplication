@@ -14,78 +14,45 @@ namespace BankApplication.Services
             BankAppDbctx = new BankApplicationDbContext();
         }
 
-        public T Login<T>(int username, string password)
+        public User Login(int userid, string password)
         {
-
-
-            return T();
-        }
-
-        public Employee AdminLogin(int employeeid, string password)
-        {
-            Employee employee = null;
+            //Employee employee = null;
             try
             {
-                if (BankAppDbctx.Employees.Any(emp => emp.Id == employeeid && emp.Password == password && emp.Type == UserType.Admin))
+                if (BankAppDbctx.Employees.Any(emp => emp.Id == userid && emp.Password == password && emp.Type == UserType.Admin))
                 {
-                    employee = BankAppDbctx.Employees.FirstOrDefault(emp => emp.Id == employeeid && emp.Password == password && emp.Type == UserType.Admin);
+                    Employee employee = BankAppDbctx.Employees.FirstOrDefault(emp => emp.Id == userid && emp.Password == password && emp.Type == UserType.Admin);
 
                     return employee;
                 }
-                return employee;
-            }
-            catch(Exception)
-            {
-                return employee;
-            }
-        }
-
-        public Employee EmployeeLogin(int employeeid, string password)
-        {
-            Employee employee = null;
-            try
-            {
-                if (BankAppDbctx.Employees.Any(emp => emp.Id == employeeid && emp.Password == password && emp.Type == UserType.Employee))
+                if (BankAppDbctx.Employees.Any(emp => emp.Id == userid && emp.Password == password && emp.Type == UserType.Employee))
                 {
-                    employee = BankAppDbctx.Employees.FirstOrDefault(emp => emp.Id == employeeid && emp.Password == password && emp.Type == UserType.Employee);
+                    Employee employee = BankAppDbctx.Employees.FirstOrDefault(emp => emp.Id == userid && emp.Password == password && emp.Type == UserType.Employee);
 
                     return employee;
                 }
-                return employee;
-            }
-            catch(Exception)
-            {
-                return employee;
-            }
-        }
-
-        public AccountHolder AccountHolderLogin(int userid, string password)
-        {
-            AccountHolder accountholder = null;
-            try
-            {
                 if (BankAppDbctx.AccountHolders.Any(emp => emp.Id == userid && emp.Password == password))
                 {
-                    accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(emp => emp.Id == userid && emp.Password == password);
+                    AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(emp => emp.Id == userid && emp.Password == password);
 
                     return accountholder;
                 }
-                return accountholder;
+                return null;
             }
             catch(Exception)
             {
-                return accountholder;
+                return null;
             }
         }
 
-        public APIResponse<string> ResetPassword(id, pswd)
+        public APIResponse<string> ResetPassword(int accountid,string password)
         {
             try
             {
-                AccountHolder oldAccountholder = BankAppDbctx.AccountHolders.FirstOrDefault(account => account.Id == accountholder1.Id);
+                AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(account => account.Id == accountid);
                 if (accountholder != null)
                 {
-                    accountholder.Password = accountholder1.Password;
+                    accountholder.Password = password;
                     BankAppDbctx.SaveChanges();
 
                     return new APIResponse<string> { IsSuccess = true, Message = "Password reset successfully" };

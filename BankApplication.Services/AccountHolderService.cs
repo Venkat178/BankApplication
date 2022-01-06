@@ -18,33 +18,34 @@ namespace BankApplication.Services
         
         public APIResponse<AccountHolder> CreateAccountHolder(AccountHolder accountholder)
         {
+            APIResponse<AccountHolder> apiresponse = new APIResponse<AccountHolder>();
             try
             {
                 Branch branch = BankAppDbctx.Branches.FirstOrDefault(b => b.Id == accountholder.BranchId);
                 if (branch != null)
                 {
-                    if (BankAppDbctx.AccountHolders.Any(p => p.Name == accountholder.Name) == true)
-                    {
-                        return new APIResponse<AccountHolder>() { IsSuccess = false, Message = "Account already exists!" };
-                    }
-
                     accountholder.Type = UserType.AccountHolder;
                     BankAppDbctx.AccountHolders.Add(accountholder);
                     BankAppDbctx.SaveChanges();
-
-                    return new APIResponse<AccountHolder>() { IsSuccess = true, Message = accountholder.Id.ToString() };
+                    apiresponse.IsSuccess = true;
+                    apiresponse.Message = accountholder.Id.ToString();
+                }
+                else
+                {
+                    apiresponse.Message = "Branch not found";
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return new APIResponse<AccountHolder>() { IsSuccess = false, Message = "Error occured while creating account" };
+                apiresponse.Message = "Error occured while creating account";
             }
-
-            return new APIResponse<AccountHolder>() { IsSuccess = false, Message = "Branch not found" };           
+            
+            return apiresponse;
         }
 
         public APIResponse<AccountHolder> UpdateAccountHolder(AccountHolder accountholder)
         {
+            APIResponse<AccountHolder> apiresponse = new APIResponse<AccountHolder>();
             try
             {
                 AccountHolder oldaccountholder = BankAppDbctx.AccountHolders.FirstOrDefault(account => account.Id == accountholder.Id);
@@ -54,21 +55,24 @@ namespace BankApplication.Services
                     oldaccountholder.PhoneNumber = accountholder.PhoneNumber == default(long) ? oldaccountholder.PhoneNumber : accountholder.PhoneNumber;
                     oldaccountholder.Address = string.IsNullOrEmpty(accountholder.Address) ? oldaccountholder.Address : accountholder.Address;
                     BankAppDbctx.SaveChanges();
-
-                    return new APIResponse<AccountHolder>() { IsSuccess = true, Message = "Successfully updated" };
+                    apiresponse.IsSuccess = true;
+                    apiresponse.Message = "Successfully updated";
                 }
-                
+                else
+                {
+                    apiresponse.Message = "AccountHolder not found";
+                }
             }
             catch(Exception)
             {
-                return new APIResponse<AccountHolder>() { IsSuccess = false, Message = "Error occured while updating account" };
+                apiresponse.Message = "Error occured while updating account";
             }
-
-            return new APIResponse<AccountHolder>() { IsSuccess = false, Message = "Changes not done!" };
+            return apiresponse;
         }
 
         public APIResponse<AccountHolder> DeleteAccountHolderAccount(int userid)
         {
+            APIResponse<AccountHolder> apiresponse = new APIResponse<AccountHolder>();
             try
             {
                 AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(account => account.Id == userid);
@@ -76,16 +80,20 @@ namespace BankApplication.Services
                 {
                     BankAppDbctx.AccountHolders.Remove(accountholder);
                     BankAppDbctx.SaveChanges();
-
-                    return new APIResponse<AccountHolder>() { IsSuccess = true, Message = "Successfully deleted" };
+                    apiresponse.Message = "Successfully deleted";
+                    apiresponse.IsSuccess = true;
+                }
+                else
+                {
+                    apiresponse.Message = "Account Holder not found";
                 }
             }
             catch(Exception)
             {
-                return new APIResponse<AccountHolder>() { IsSuccess = false, Message = "Error occured while deleting.Try again" };
+                apiresponse.Message = "Error occured while deleting.Try again";
             }
-
-            return new APIResponse<AccountHolder>() { IsSuccess = false, Message = "Account Holder not found" };
+            
+            return apiresponse;
         }
 
         public AccountHolder GetAccountHolder(int accountid)
@@ -116,58 +124,75 @@ namespace BankApplication.Services
 
         public APIResponse<AccountHolder> GetAccountHoldersByBank(int bankid)
         {
+            APIResponse<AccountHolder> apiresponse = new APIResponse<AccountHolder>();
             try
             {
                 Bank bank = BankAppDbctx.Banks.FirstOrDefault(_ => _.Id == bankid);
                 if (bank != null)
                 {
-                    return new APIResponse<AccountHolder> { list = BankAppDbctx.AccountHolders.Where(b => b.BankId == bankid).ToList(), IsSuccess = true };
+                    apiresponse.ListData = BankAppDbctx.AccountHolders.Where(b => b.BankId == bankid).ToList();
+                    apiresponse.IsSuccess = true;
                 }
-                return new APIResponse<AccountHolder> { Message = "Bank not found", IsSuccess = false };
+                else
+                {
+                    apiresponse.Message = "Bank not found";
+                }
+                
             }
             catch(Exception)
             {
-                return new APIResponse<AccountHolder> { Message = "Error occured", IsSuccess = false };
+                apiresponse.Message = "Error occured";
             }
+            return apiresponse;
         }
 
         public APIResponse<AccountHolder> GetBalance(int accountid)
         {
+            APIResponse<AccountHolder> apiresponse = new APIResponse<AccountHolder>();
             try
             {
                 AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(_ => _.Id == accountid);
                 if (accountholder != null)
                 {
-                    return new APIResponse<AccountHolder> { Message = accountholder.Balance.ToString(), IsSuccess = true };
+                    apiresponse.IsSuccess = true;
+                    apiresponse.Message = accountholder.Balance.ToString();
                 }
-
-                return new APIResponse<AccountHolder> { Message = "Account Holder not found", IsSuccess = false };
+                else
+                {
+                    apiresponse.Message = "Account Holder not found";
+                }
+                
             }
             catch(Exception)
             {
-                return new APIResponse<AccountHolder> { Message = "Error occured", IsSuccess = false };
+                apiresponse.Message = "Error occured";
             }
+            return apiresponse;
         }
 
         public APIResponse<Transaction> GetTransactions(int accountholderid)
         {
+            APIResponse<Transaction> apiresponse = new APIResponse<Transaction>();
             try
             {
-                APIResponse<Transaction> apiresponse = new APIResponse<Transaction>();
                 AccountHolder accountholder = BankAppDbctx.AccountHolders.FirstOrDefault(_ => _.Id == accountholderid);
                 if (accountholder != null)
                 {
                     List<Transaction> transactions = BankAppDbctx.Transactions.Where(t => t.SrcAccId == accountholderid).ToList();
-
-                    return new APIResponse<Transaction> { list = transactions, IsSuccess = true };
+                    apiresponse.IsSuccess = true;
+                    apiresponse.ListData = transactions;
                 }
-
-                return new APIResponse<Transaction> { Message = "Account Holder not found", IsSuccess = false };
+                else
+                {
+                    apiresponse.Message = "Successfully updated";
+                }
+                
             }
             catch(Exception)
             {
-                return new APIResponse<Transaction> { Message = "Erro occured", IsSuccess = false };
+                apiresponse.Message = "Error occured";
             }
+            return apiresponse;
         }
     }
 }

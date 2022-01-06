@@ -13,7 +13,8 @@ namespace BankApplication.Concerns
         public APIResponse<int> UpdateCharges(Bank bank);
         public APIResponse<Transaction> Deposit(User user, int accountid, double amt);
         public APIResponse<Transaction> Withdraw(User user, int accountid, double amt);
-        public APIResponse<Transaction> Transfer(User user, Transaction transaction , Charges charge);
-        public APIResponse<Branch> ViewAllBranches(int bankid);
+        public APIResponse<Transaction> Transfer(int userid, int srcId, int destId, double amount, Charges charge);
+        public APIResponse<Transaction> RevertTransaction(User user, int transid);
+        public APIResponse<Branch> GetBranchesBybank(int bankid);
     }
 }

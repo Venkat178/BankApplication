@@ -7,6 +7,7 @@ namespace BankApplication.Models
         public APIResponse()
         {
             this.ListData = new List<T>();
+            IsSuccess = false;
         }
         public bool IsSuccess { get; set; }
         public string Message { get; set; }
