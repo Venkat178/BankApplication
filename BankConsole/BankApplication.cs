@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Linq;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using BankApplication.Models;
 using BankApplication.Services;
@@ -10,9 +11,16 @@ namespace BankApplication
     class BankApplication
     {
         IBankService BankService;
+        IEmployeeService EmployeeService;
+        IAccountService AccountService;
+        IAccountHolderService AccountHolderService;
 
-        public void Initialize()
+        public void Initialize(IHost host)
         {
+            AccountHolderService = host.Services.GetRequiredService<AccountHolderService>();
+            AccountService = host.Services.GetRequiredService<AccountService>();
+            BankService = host.Services.GetRequiredService<BankService>();
+            EmployeeService = host.Services.GetRequiredService<EmployeeService>();
             this.BankService = new BankService(new AccountHolderService());
             this.MainMenu();
         }
@@ -50,9 +58,9 @@ namespace BankApplication
 
         public int ViewAllAccountHolders()
         {
-            AccountHolderService accountholderservice = new AccountHolderService();
+            //AccountHolderService = new AccountHolderService();
             int bankid = Convert.ToInt32(Utilities.GetStringInput("Enter the bank id  :  ", true));
-            APIResponse<AccountHolder> apiresponse = accountholderservice.GetAccountHoldersByBank(bankid);
+            APIResponse<AccountHolder> apiresponse = AccountHolderService.GetAccountHoldersByBank(bankid);
             if (apiresponse.IsSuccess)
             {
                 List<AccountHolder> accountholderlist = apiresponse.ListData;
@@ -71,9 +79,9 @@ namespace BankApplication
 
         public void ViewAllEmployees()
         {
-            EmployeeService employeeservice = new EmployeeService();
+            EmployeeService = new EmployeeService();
             int bankid = Convert.ToInt32(Utilities.GetStringInput("Enter the bank id  :  ", true));
-            APIResponse<Employee> apiresponse = employeeservice.GetEmployeesByBank(bankid);
+            APIResponse<Employee> apiresponse = EmployeeService.GetEmployeesByBank(bankid);
             if (apiresponse.IsSuccess)
             {
                 List<Employee> employeelist = apiresponse.ListData;
@@ -90,9 +98,9 @@ namespace BankApplication
 
         public void ViewTransactions()
         {
-            AccountHolderService accountholderservice =new AccountHolderService();
+            //AccountHolderService accountholderservice =new AccountHolderService();
             int accountid = Convert.ToInt32(Utilities.GetStringInput("Enter the account id  :  ", true));
-            APIResponse<Transaction> apiresponse = accountholderservice.GetTransactions(accountid);
+            APIResponse<Transaction> apiresponse = AccountHolderService.GetTransactions(accountid);
             if (apiresponse.IsSuccess)
             {
                 List<Transaction> transactionlist = apiresponse.ListData;
@@ -109,7 +117,6 @@ namespace BankApplication
 
         public int BankServiceViewAllBranches()
         {
-            //IBankService bankservice = new BankService();
             int bankid = Convert.ToInt32(Utilities.GetStringInput("Enter the bank id  :  ", true));
             APIResponse<Branch> apiresponse = BankService.GetBranchesBybank(bankid);
             if (apiresponse.IsSuccess)
@@ -130,7 +137,7 @@ namespace BankApplication
 
         public void SetUpBank()
         {
-            IEmployeeService employeeservice = new EmployeeService();
+            //IEmployeeService employeeservice = new EmployeeService();
             Bank bank = new Bank()
             {
                 Name = Utilities.GetStringInput("Enter the Bank name  :  ", true)
@@ -166,7 +173,7 @@ namespace BankApplication
                     {
                         Console.WriteLine("Password does not matched! Please try Again");
                     }
-                    var adminRes = employeeservice.CreateEmployee(admin);
+                    var adminRes = EmployeeService.CreateEmployee(admin);
                     if (adminRes.IsSuccess)
                     {
                         Console.WriteLine("The Admin Id is " + admin.EmployeeId);
@@ -177,7 +184,7 @@ namespace BankApplication
                         Console.WriteLine(adminRes.Message);
                         while(!adminRes.IsSuccess)
                         {
-                            adminRes = employeeservice.CreateEmployee(admin);
+                            adminRes = EmployeeService.CreateEmployee(admin);
                         }
                     }
                 }
@@ -191,12 +198,12 @@ namespace BankApplication
 
         public void Login()
         {
-            AccountService accountservice = new AccountService();
+            //AccountService accountservice = new AccountService();
             int username = Convert.ToInt32(Utilities.GetStringInput("Enter userid :  ", true));
             string password = Utilities.GetStringInput("Enter password :  ", true);
             try
             {
-                User user = accountservice.Login(username, password);
+                User user = AccountService.Login(username, password);
                 if(user != null)
                 {
                     switch (user.Type)
@@ -228,7 +235,7 @@ namespace BankApplication
 
         public string EmployeeRegistration()
         {
-            IEmployeeService employeeservice = new EmployeeService();
+            //IEmployeeService employeeservice = new EmployeeService();
             Employee employee = new Employee();
             try
             {
@@ -245,7 +252,7 @@ namespace BankApplication
                     Console.WriteLine("Password does not matched! Please try Again");
                 }
                 employee.Password = password;
-                APIResponse<Employee> apiresponse = employeeservice.CreateEmployee(employee);
+                APIResponse<Employee> apiresponse = EmployeeService.CreateEmployee(employee);
                 if(!apiresponse.IsSuccess)
                 {
                     Console.WriteLine(apiresponse.Message);
@@ -270,7 +277,7 @@ namespace BankApplication
             AccountHolder accountholder = new AccountHolder();
             try
             {
-                AccountHolderService accountholderservice = new AccountHolderService();
+                //AccountHolderService accountholderservice = new AccountHolderService();
                 
                 accountholder.Name = Utilities.GetStringInput("Enter the Your Name   :   ", true);
                 int bankid = this.BankServiceViewAllBranches();
@@ -285,7 +292,7 @@ namespace BankApplication
                     Console.WriteLine("Password does not matched! Please try Again");
                 }
                 accountholder.Password = password;
-                APIResponse<AccountHolder> status = accountholderservice.CreateAccountHolder(accountholder);
+                APIResponse<AccountHolder> status = AccountHolderService.CreateAccountHolder(accountholder);
                 if(!status.IsSuccess)
                 {
                     Console.WriteLine(status.Message);
@@ -390,9 +397,9 @@ namespace BankApplication
 
         public void ViewBalance()
         {
-            AccountHolderService accountholderservice = new AccountHolderService();
+            //AccountHolderService accountholderservice = new AccountHolderService();
             int accountid = Convert.ToInt32(Utilities.GetStringInput("Enter the Account Id  :  ", true));
-            APIResponse<AccountHolder> apiresponse = accountholderservice.GetBalance(accountid);
+            APIResponse<AccountHolder> apiresponse = AccountHolderService.GetBalance(accountid);
             if(apiresponse.IsSuccess)
             {
                 Console.WriteLine("Your Balance is " + apiresponse.Message);
@@ -473,14 +480,14 @@ namespace BankApplication
 
         public void UpdateAccountHolder()
         {
-            IAccountHolderService accountholderservice = new AccountHolderService();
+            //IAccountHolderService accountholderservice = new AccountHolderService();
             int bankid = this.ViewAllAccountHolders();
             AccountHolder accountholder = new AccountHolder();
             int accountNo = Convert.ToInt32(Utilities.GetStringInput("Enter the account number  :  ", true));
             accountholder.Name = Utilities.GetStringInput("Enter the Name to Update  :  ", false);
             accountholder.PhoneNumber = Convert.ToInt32(Utilities.GetPhoneNumber("Enter the Phone Number to Update  :  ", false));
             accountholder.Address = Utilities.GetStringInput("Enter the Address to Update  :  ", false);
-            APIResponse<AccountHolder> status = accountholderservice.UpdateAccountHolder(accountholder);
+            APIResponse<AccountHolder> status = AccountHolderService.UpdateAccountHolder(accountholder);
             if (!status.IsSuccess)
             {
                 Console.WriteLine(status.Message);
@@ -490,9 +497,9 @@ namespace BankApplication
 
         public void DeleteAccountHolder()
         {
-            IAccountHolderService accountholderservice = new AccountHolderService();
+            //IAccountHolderService accountholderservice = new AccountHolderService();
             int userid1 = Convert.ToInt32(Utilities.GetStringInput("Enter the userid  :  ", true));
-            APIResponse<AccountHolder> status = accountholderservice.DeleteAccountHolderAccount(userid1);
+            APIResponse<AccountHolder> status = AccountHolderService.DeleteAccountHolderAccount(userid1);
             if (!status.IsSuccess)
             {
                 Console.WriteLine(status.Message);
@@ -548,14 +555,14 @@ namespace BankApplication
 
         public void ResetPassword()
         {
-            IAccountService accountservice = new AccountService();
+            //IAccountService accountservice = new AccountService();
             int id = Convert.ToInt32(Utilities.GetStringInput("Enter the account id  :  ", true));
             string password = Utilities.GetStringInput("Enter the new password  :  ", true);
             while (password != Utilities.GetStringInput("Re-Enter the password  :  ", true))
             {
                 Console.WriteLine("Password does not matched! Please try Again");
             }
-            APIResponse<string> apiresponse = accountservice.ResetPassword(id, password);
+            APIResponse<string> apiresponse = AccountService.ResetPassword(id, password);
             if(apiresponse.IsSuccess)
             {
                 Console.WriteLine(apiresponse.Message);
@@ -633,14 +640,14 @@ namespace BankApplication
 
         public void UpdateEmployee()
         {
-            IEmployeeService employeeservice = new EmployeeService();
+            //IEmployeeService employeeservice = new EmployeeService();
             this.ViewAllEmployees();
             Employee employee = new Employee();
             employee.Id = Convert.ToInt32(Utilities.GetStringInput("Enter the employee id  :  ", true));
             employee.Name = Utilities.GetStringInput("Enter the Name to Update  :  ", false);
             employee.PhoneNumber = Convert.ToInt32(Utilities.GetPhoneNumber("Enter the Phone Number to Update  :  ", false));
             employee.Address = Utilities.GetStringInput("Enter the Address to Update  :  ", false);
-            APIResponse<Employee> status = employeeservice.UpdateEmployee(employee);
+            APIResponse<Employee> status = EmployeeService.UpdateEmployee(employee);
             if (!status.IsSuccess)
             {
                 Console.WriteLine(status.Message);
@@ -650,9 +657,9 @@ namespace BankApplication
 
         public void DeleteEmployee()
         {
-            IEmployeeService employeeservice = new EmployeeService();
+            //IEmployeeService employeeservice = new EmployeeService();
             int employeeid = Convert.ToInt32(Utilities.GetStringInput("Enter the employeeid  :  ", true));
-            APIResponse<Employee> status = employeeservice.DeleteEmployee(employeeid);
+            APIResponse<Employee> status = EmployeeService.DeleteEmployee(employeeid);
             if (!status.IsSuccess)
             {
                 Console.WriteLine(status.Message);
